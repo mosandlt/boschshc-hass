@@ -472,7 +472,7 @@ async def async_setup_entry(
 
     # add all current items in session
     for switch in session.userdefinedstates:
-        async_add_userdefinedstateswitch(switch=switch)
+        async_add_userdefinedstateswitch(device=switch)
 
     # register listener for new switches
     config_entry.async_on_unload(
