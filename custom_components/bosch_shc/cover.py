@@ -21,7 +21,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DATA_SESSION, DOMAIN
+from .const import DATA_SESSION, DOMAIN, LOGGER
 from .entity import SHCEntity, async_migrate_to_new_unique_id
 
 
@@ -149,7 +149,7 @@ class ShutterControlCover(SHCEntity, CoverEntity):
 
             else:
                 # for other devices, we cannot determine the movement direction, so we set both to None
-                print("  No plan what to do")
+                LOGGER.debug("Cannot determine movement direction for %s", self._device.name)
                 self._attr_is_closing = None
                 self._attr_is_opening = None
 
@@ -247,10 +247,14 @@ class BlindsControlCover(ShutterControlCover, CoverEntity):
 
     def open_cover(self, **kwargs):
         """Open the cover."""
+        self._attr_is_opening = True
+        self._attr_is_closing = False
         self._device.blinds_level = 1.0
 
     def close_cover(self, **kwargs):
         """Close cover."""
+        self._attr_is_closing = True
+        self._attr_is_opening = False
         self._device.blinds_level = 0.0
 
     def set_cover_position(self, **kwargs):

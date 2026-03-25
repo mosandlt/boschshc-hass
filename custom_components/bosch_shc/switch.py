@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-
+import re
 from dataclasses import dataclass
 
 from boschshcpy import (
@@ -220,8 +220,6 @@ SWITCH_TYPES: dict[str, SHCSwitchEntityDescription] = {
 
 def _format(input_string: str) -> str:
     """Format a string to be used in an entity_id."""
-    import re
-
     for search, replace in {"ä": "ae", "ö": "oe", "ü": "ue"}.items():
         input_string = input_string.casefold().replace(search, replace)
     return re.sub(r"\s+", "_", re.sub("[^0-9a-z_ ]", "", input_string))
@@ -460,17 +458,17 @@ async def async_setup_entry(
 
     @callback
     def async_add_userdefinedstateswitch(
-        switch: SHCUserDefinedStateSwitch,
+        device: SHCUserDefinedState,
     ) -> None:
         """Add User Defined State Switch."""
-        switch = SHCUserDefinedStateSwitch(
-            device=switch,
+        entity = SHCUserDefinedStateSwitch(
+            device=device,
             hass=hass,
             session=session,
             entry_id=config_entry.entry_id,
             description=SWITCH_TYPES["user_defined_state"],
         )
-        async_add_entities([switch])
+        async_add_entities([entity])
 
     # add all current items in session
     for switch in session.userdefinedstates:

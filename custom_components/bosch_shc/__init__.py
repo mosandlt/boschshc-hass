@@ -1,5 +1,7 @@
 """The Bosch Smart Home Controller integration."""
 
+from datetime import timedelta
+
 import voluptuous as vol
 import functools as ft
 import json
@@ -43,6 +45,7 @@ from .const import (
     CONF_SSL_CERTIFICATE,
     CONF_SSL_KEY,
     DOMAIN_NOTIFICATION_ID,
+    DATA_CERT_CHECK_UNSUB,
     DATA_POLLING_HANDLER,
     DATA_SESSION,
     DATA_SHC,
@@ -151,9 +154,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     }
 
     # Daily certificate re-check scheduling
-    from datetime import timedelta
-    from .const import DATA_CERT_CHECK_UNSUB
-
     def _scheduled_cert_check(_now):
         async def _run():
             try:
@@ -233,8 +233,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data[DOMAIN][entry.entry_id][DATA_POLLING_HANDLER]()
     # cancel daily cert check
-    from .const import DATA_CERT_CHECK_UNSUB
-
     unsub = hass.data[DOMAIN][entry.entry_id].pop(DATA_CERT_CHECK_UNSUB, None)
     if unsub:
         unsub()
