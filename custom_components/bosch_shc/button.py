@@ -10,11 +10,13 @@ from homeassistant.components.button import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 
 from .const import (
     DATA_SESSION,
+    DATA_SHC,
     DOMAIN,
     LOGGER,
     OPT_SCENARIOS_AS_BUTTONS,
@@ -66,6 +68,7 @@ async def async_setup_entry(
     if config_entry.options.get(OPT_SCENARIOS_AS_BUTTONS, False):
         entry_unique_id = config_entry.unique_id
         entry_id = config_entry.entry_id
+        shc_device: DeviceEntry = hass.data[DOMAIN][entry_id][DATA_SHC]
         for scenario in session.scenarios:
             try:
                 entities.append(
@@ -73,6 +76,7 @@ async def async_setup_entry(
                         scenario=scenario,
                         entry_unique_id=entry_unique_id,
                         entry_id=entry_id,
+                        shc_device=shc_device,
                     )
                 )
             except (KeyError, AttributeError) as err:
@@ -131,15 +135,35 @@ class SHCScenarioButton(ButtonEntity):
     own set of scenario buttons even when multiple controllers are present.
     """
 
+    _attr_has_entity_name = True
     _attr_icon = "mdi:script-text-play"
     _attr_should_poll = False
 
-    def __init__(self, scenario, entry_unique_id: str | None, entry_id: str) -> None:
+    def __init__(
+        self,
+        scenario,
+        entry_unique_id: str | None,
+        entry_id: str,
+        shc_device: DeviceEntry | None = None,
+    ) -> None:
         """Initialize a scenario button."""
         self._scenario = scenario
+        self._shc_device = shc_device
         prefix = entry_unique_id if entry_unique_id else entry_id
         self._attr_unique_id = f"{prefix}_scenario_{scenario.id}"
         self._attr_name = scenario.name
+
+    @property
+    def device_info(self):
+        """Return the device info (links this button to the SHC controller device)."""
+        if self._shc_device is None:
+            return None
+        return {
+            "identifiers": self._shc_device.identifiers,
+            "name": self._shc_device.name,
+            "manufacturer": self._shc_device.manufacturer,
+            "model": self._shc_device.model,
+        }
 
     def press(self) -> None:
         """Trigger the scenario (runs in executor — scenario.trigger() is sync)."""

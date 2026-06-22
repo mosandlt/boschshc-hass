@@ -111,6 +111,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
     async def scenario_service_call(call: ServiceCall) -> None:
         """SHC Scenario service call."""
+        from boschshcpy.exceptions import SHCException, SHCConnectionError
         name = call.data[ATTR_NAME]
         title = call.data[ATTR_TITLE]
         for config_entry in hass.config_entries.async_entries(DOMAIN):
@@ -120,7 +121,12 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             if title in ("", runtime.title):
                 for scenario in runtime.session.scenarios:
                     if scenario.name == name:
-                        await hass.async_add_executor_job(scenario.trigger)
+                        try:
+                            await hass.async_add_executor_job(scenario.trigger)
+                        except (SHCException, SHCConnectionError) as err:
+                            raise ServiceValidationError(
+                                f"Failed to trigger scenario '{name}': {err}"
+                            ) from err
 
     hass.services.async_register(
         DOMAIN,
@@ -254,6 +260,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     except SHCAuthenticationError as err:
         raise ConfigEntryAuthFailed from err
     except SHCConnectionError as err:
+        LOGGER.warning(
+            "Bosch SHC at %s is unavailable, will retry: %s", data.get(CONF_HOST), err
+        )
         raise ConfigEntryNotReady from err
 
     shc_info = session.information
@@ -453,9 +462,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     async def stop_polling(event):
         """Stop polling service."""
+        LOGGER.debug(
+            "Bosch SHC '%s': stopping long-poll session (HA shutdown).", entry.title
+        )
         await hass.async_add_executor_job(session.stop_polling)
 
+    LOGGER.debug(
+        "Bosch SHC '%s': starting long-poll session (local_push).", entry.title
+    )
     await hass.async_add_executor_job(session.start_polling)
+    LOGGER.info("Bosch SHC '%s' connected and polling.", entry.title)
     entry.runtime_data.polling_handler = hass.bus.async_listen_once(
         EVENT_HOMEASSISTANT_STOP, stop_polling
     )

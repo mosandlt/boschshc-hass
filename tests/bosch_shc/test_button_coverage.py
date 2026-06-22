@@ -28,6 +28,7 @@ from custom_components.bosch_shc.button import (
 )
 from custom_components.bosch_shc.const import (
     DATA_SESSION,
+    DATA_SHC,
     DOMAIN,
     OPT_EXCLUDED_DEVICES,
     OPT_SCENARIOS_AS_BUTTONS,
@@ -53,8 +54,20 @@ def _fake_device(dev_id="dev-001", room_id=None):
     )
 
 
+def _fake_shc_device():
+    """Minimal DeviceEntry-like double for the SHC controller."""
+    return SimpleNamespace(
+        identifiers={("bosch_shc", "shc-controller-001")},
+        name="Smart Home Controller",
+        manufacturer="Bosch",
+        model="SmartHomeController",
+    )
+
+
 def _make_hass(session):
-    return SimpleNamespace(data={DOMAIN: {"E1": {DATA_SESSION: session}}})
+    return SimpleNamespace(
+        data={DOMAIN: {"E1": {DATA_SESSION: session, DATA_SHC: _fake_shc_device()}}}
+    )
 
 
 def _make_entry(options=None, entry_id="E1", unique_id="uid-001"):
@@ -391,3 +404,73 @@ class TestSHCScenarioButtonPress:
         assert len(result) == 1
         result[0].press()
         assert trigger_calls == [True]
+
+
+# ---------------------------------------------------------------------------
+# Quality Scale: has-entity-name + unique_id preservation + device_info
+# ---------------------------------------------------------------------------
+
+class TestSHCScenarioButtonQualityScale:
+    """Verify Bronze quality-scale rules for SHCScenarioButton."""
+
+    def test_has_entity_name_true(self):
+        """_attr_has_entity_name=True (Bronze: has-entity-name).
+
+        SHCScenarioButton does not inherit a shadowing property from its base,
+        so checking the class attribute directly is reliable.
+        """
+        sc = _good_scenario()
+        btn = SHCScenarioButton(scenario=sc, entry_unique_id="u", entry_id="e")
+        assert btn._attr_has_entity_name is True
+
+    def test_unique_id_format_unchanged_with_entry_unique_id(self):
+        """Regression pin: unique_id = f'{entry_unique_id}_scenario_{scenario.id}'.
+
+        This exact format must never change — changing it orphans existing entities.
+        """
+        sc = _good_scenario(sid="sc-999")
+        btn = SHCScenarioButton(
+            scenario=sc, entry_unique_id="uid-fixed", entry_id="entry-fallback"
+        )
+        assert btn._attr_unique_id == "uid-fixed_scenario_sc-999"
+
+    def test_unique_id_format_unchanged_without_entry_unique_id(self):
+        """Regression pin: fallback to entry_id when entry_unique_id is None."""
+        sc = _good_scenario(sid="sc-888")
+        btn = SHCScenarioButton(
+            scenario=sc, entry_unique_id=None, entry_id="entry-id-fallback"
+        )
+        assert btn._attr_unique_id == "entry-id-fallback_scenario_sc-888"
+
+    def test_device_info_links_to_shc_controller(self):
+        """device_info returns a dict with the SHC controller identifiers."""
+        shc_dev = _fake_shc_device()
+        sc = _good_scenario(sid="sc-di")
+        btn = SHCScenarioButton(
+            scenario=sc, entry_unique_id="uid-1", entry_id="entry-1", shc_device=shc_dev
+        )
+        info = btn.device_info
+        assert info is not None
+        assert info["identifiers"] == shc_dev.identifiers
+        assert info["name"] == shc_dev.name
+        assert info["manufacturer"] == shc_dev.manufacturer
+        assert info["model"] == shc_dev.model
+
+    def test_device_info_none_when_no_shc_device(self):
+        """device_info returns None when shc_device is not provided (graceful fallback)."""
+        sc = _good_scenario(sid="sc-no-dev")
+        btn = SHCScenarioButton(
+            scenario=sc, entry_unique_id="uid-1", entry_id="entry-1"
+        )
+        assert btn.device_info is None
+
+    def test_setup_entry_passes_shc_device_to_button(self):
+        """async_setup_entry populates shc_device so device_info is not None."""
+        sc = _good_scenario(sid="sc-wiring", name="Test Wiring")
+        session = _make_session(scenarios=[sc])
+        entry = _make_entry(options={OPT_SCENARIOS_AS_BUTTONS: True}, unique_id="uid-w")
+        result = _run_setup(session, entry)
+        assert len(result) == 1
+        btn = result[0]
+        assert btn.device_info is not None
+        assert btn.device_info["name"] == "Smart Home Controller"
