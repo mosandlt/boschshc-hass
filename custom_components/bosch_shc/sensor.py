@@ -294,7 +294,7 @@ async def async_setup_entry(
             )
         )
         # WalkTest state sensor: only created when WalkTest service is present.
-        if hasattr(sensor, "walk_state") and sensor.walk_state is not None:
+        if getattr(sensor, "supports_walk_test", False) and sensor.walk_state is not None:
             entities.append(
                 WalkStateSensor(
                     device=sensor,
@@ -742,7 +742,7 @@ class BatteryLevelSensor(SHCEntity, SensorEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize a battery-level sensor."""
         super().__init__(device, entry_id)
-        self._attr_translation_key = "battery_level"
+        self._attr_name = "Battery Level"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_battery_level"
         )
@@ -775,7 +775,7 @@ class TwinguardCombinedRatingSensor(SHCEntity, SensorEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize a Twinguard combined-rating diagnostic sensor."""
         super().__init__(device, entry_id)
-        self._attr_translation_key = "combined_rating"
+        self._attr_name = "Combined Rating"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_combined_rating"
         )
@@ -804,7 +804,7 @@ class TwinguardDescriptionSensor(SHCEntity, SensorEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize a Twinguard air-quality description diagnostic sensor."""
         super().__init__(device, entry_id)
-        self._attr_translation_key = "air_quality_description"
+        self._attr_name = "Air Quality Description"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_description"
         )
@@ -829,7 +829,7 @@ class WalkStateSensor(SHCEntity, SensorEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the walk-state sensor."""
         super().__init__(device, entry_id)
-        self._attr_translation_key = "walk_test_state"
+        self._attr_name = "Walk Test State"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_walk_state"
         )

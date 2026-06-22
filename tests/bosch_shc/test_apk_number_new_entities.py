@@ -188,7 +188,7 @@ class TestPowerThresholdNumber:
         assert n._attr_device_class == NumberDeviceClass.POWER
 
     def test_smartplug_power_threshold_created_when_attr_present(self):
-        plug = _fake_device(power_threshold=100.0)
+        plug = _fake_device(power_threshold=100.0, supports_energy_saving_mode=True)
         session = _make_session(smart_plugs=[plug])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -260,7 +260,7 @@ class TestEnterDurationNumber:
         assert n._attr_entity_category == EntityCategory.CONFIG
 
     def test_smartplugcompact_enter_duration_created_when_attr_present(self):
-        plug = _fake_device(enter_duration_seconds=60)
+        plug = _fake_device(enter_duration_seconds=60, supports_energy_saving_mode=True)
         session = _make_session(smart_plugs_compact=[plug])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -352,7 +352,7 @@ class TestLedBrightnessNumber:
         assert n._attr_unique_id == "root1_dev1_led_brightness"
 
     def test_smartplug_led_brightness_created_when_attr_present(self):
-        plug = _fake_device(led_brightness=50)
+        plug = _fake_device(led_brightness=50, supports_led_brightness=True)
         session = _make_session(smart_plugs=[plug])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -461,7 +461,7 @@ class TestDisplayBrightnessNumber:
         assert n._attr_entity_category == EntityCategory.CONFIG
 
     def test_thermostat_display_brightness_created_when_attr_present(self):
-        therm = _fake_device(display_brightness=50)
+        therm = _fake_device(display_brightness=50, supports_display_configuration=True)
         session = _make_session(thermostats=[therm])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -475,7 +475,7 @@ class TestDisplayBrightnessNumber:
         assert "DisplayBrightnessNumber" not in types
 
     def test_roomthermostat_display_brightness_created(self):
-        rth = _fake_device(display_brightness=40)
+        rth = _fake_device(display_brightness=40, supports_display_configuration=True)
         session = _make_session(roomthermostats=[rth])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -569,7 +569,7 @@ class TestDisplayOnTimeNumber:
         assert n._attr_unique_id == "root1_dev1_display_on_time"
 
     def test_thermostat_display_on_time_created_when_attr_present(self):
-        therm = _fake_device(display_on_time=30)
+        therm = _fake_device(display_on_time=30, supports_display_configuration=True)
         session = _make_session(thermostats=[therm])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]

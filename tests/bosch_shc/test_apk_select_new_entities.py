@@ -160,7 +160,7 @@ class TestStateAfterPowerOutageSelect:
         assert dev.state_after_power_outage == PowerSwitchConfigurationService.StateAfterPowerOutage.ON
 
     def test_created_when_attr_present(self):
-        plug = _fake_device(state_after_power_outage=True)
+        plug = _fake_device(state_after_power_outage=True, supports_power_switch_configuration=True)
         session = _make_session(smart_plugs=[plug])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -174,7 +174,7 @@ class TestStateAfterPowerOutageSelect:
         assert "StateAfterPowerOutageSelect" not in types
 
     def test_created_for_smartplugcompact(self):
-        plug = _fake_device(state_after_power_outage=True)
+        plug = _fake_device(state_after_power_outage=True, supports_power_switch_configuration=True)
         session = _make_session(smart_plugs_compact=[plug])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -238,7 +238,7 @@ class TestSmokeSensitivitySelect:
         assert dev.smoke_sensitivity == SmokeSensitivityService.SmokeSensitivityLevel.MIDDLE
 
     def test_created_for_smoke_detector_when_attr_present(self):
-        sd = _fake_device(smoke_sensitivity=True)
+        sd = _fake_device(smoke_sensitivity=True, supports_smoke_sensitivity=True)
         session = _make_session(smoke_detectors=[sd])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -252,7 +252,7 @@ class TestSmokeSensitivitySelect:
         assert "SmokeSensitivitySelect" not in types
 
     def test_created_for_twinguard(self):
-        tg = _fake_device(smoke_sensitivity=True)
+        tg = _fake_device(smoke_sensitivity=True, supports_smoke_sensitivity=True)
         session = _make_session(twinguards=[tg])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -266,6 +266,7 @@ class TestSmokeSensitivitySelect:
             name = "X"
             serial = "S"
             supports_silentmode = False
+            supports_smoke_sensitivity = True
 
             @property
             def smoke_sensitivity(self):
@@ -331,7 +332,7 @@ class TestDisplayDirectionSelect:
         assert dev.display_direction == DisplayDirection.Direction.REVERSED
 
     def test_created_for_thermostat(self):
-        dev = _fake_device(display_direction=True)
+        dev = _fake_device(display_direction=True, supports_display_direction=True)
         session = _make_session(thermostats=[dev])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -345,7 +346,7 @@ class TestDisplayDirectionSelect:
         assert "DisplayDirectionSelect" not in types
 
     def test_created_for_roomthermostat(self):
-        dev = _fake_device(display_direction=True)
+        dev = _fake_device(display_direction=True, supports_display_direction=True)
         session = _make_session(roomthermostats=[dev])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -405,7 +406,7 @@ class TestDisplayedTemperatureSelect:
         assert dev.displayed_temperature == DisplayedTemperatureConfiguration.DisplayedTemperature.MEASURED
 
     def test_created_for_thermostat(self):
-        dev = _fake_device(displayed_temperature=True)
+        dev = _fake_device(displayed_temperature=True, supports_displayed_temperature=True)
         session = _make_session(thermostats=[dev])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -419,7 +420,7 @@ class TestDisplayedTemperatureSelect:
         assert "DisplayedTemperatureSelect" not in types
 
     def test_created_for_roomthermostat(self):
-        dev = _fake_device(displayed_temperature=True)
+        dev = _fake_device(displayed_temperature=True, supports_displayed_temperature=True)
         session = _make_session(roomthermostats=[dev])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -479,7 +480,7 @@ class TestTerminalTypeSelect:
         assert dev.terminal_type == TerminalConfiguration.Type.FLOOR_SENSOR_CONNECTED
 
     def test_created_when_attr_present(self):
-        dev = _fake_device(terminal_type=True)
+        dev = _fake_device(terminal_type=True, supports_terminal_configuration=True)
         session = _make_session(thermostats=[dev])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -493,7 +494,7 @@ class TestTerminalTypeSelect:
         assert "TerminalTypeSelect" not in types
 
     def test_created_for_roomthermostat(self):
-        dev = _fake_device(terminal_type=True)
+        dev = _fake_device(terminal_type=True, supports_terminal_configuration=True)
         session = _make_session(roomthermostats=[dev])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -553,7 +554,7 @@ class TestValveTypeSelect:
         assert dev.valve_type == WallThermostatConfiguration.ValveType.NORMALLY_OPEN
 
     def test_created_when_attr_present(self):
-        dev = _fake_device(valve_type=True)
+        dev = _fake_device(valve_type=True, supports_wall_thermostat_configuration=True)
         session = _make_session(thermostats=[dev])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -567,7 +568,7 @@ class TestValveTypeSelect:
         assert "ValveTypeSelect" not in types
 
     def test_created_for_roomthermostat(self):
-        dev = _fake_device(valve_type=True)
+        dev = _fake_device(valve_type=True, supports_wall_thermostat_configuration=True)
         session = _make_session(roomthermostats=[dev])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -627,7 +628,7 @@ class TestHeaterTypeSelect:
         assert dev.heater_type == WallThermostatConfiguration.HeaterType.CONVECTOR_PASSIVE
 
     def test_created_when_attr_present(self):
-        dev = _fake_device(heater_type=True)
+        dev = _fake_device(heater_type=True, supports_wall_thermostat_configuration=True)
         session = _make_session(thermostats=[dev])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -694,7 +695,7 @@ class TestSwitchTypeSelect:
         assert dev.switch_type == SwitchConfiguration.SwitchType.NONE
 
     def test_created_for_relay_when_attr_present(self):
-        relay = _fake_device(switch_type=True)
+        relay = _fake_device(switch_type=True, supports_switch_configuration=True)
         session = _make_session(micromodule_relays=[relay])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -708,7 +709,7 @@ class TestSwitchTypeSelect:
         assert "SwitchTypeSelect" not in types
 
     def test_created_for_light_control(self):
-        lc = _fake_device(switch_type=True)
+        lc = _fake_device(switch_type=True, supports_switch_configuration=True)
         session = _make_session(micromodule_light_controls=[lc])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -768,7 +769,7 @@ class TestActuatorTypeSelect:
         assert dev.actuator_type == SwitchConfiguration.ActuatorType.NORMALLY_CLOSED
 
     def test_created_for_relay(self):
-        relay = _fake_device(actuator_type=True)
+        relay = _fake_device(actuator_type=True, supports_switch_configuration=True)
         session = _make_session(micromodule_relays=[relay])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -782,7 +783,7 @@ class TestActuatorTypeSelect:
         assert "ActuatorTypeSelect" not in types
 
     def test_created_for_light_control(self):
-        lc = _fake_device(actuator_type=True)
+        lc = _fake_device(actuator_type=True, supports_switch_configuration=True)
         session = _make_session(micromodule_light_controls=[lc])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -842,7 +843,7 @@ class TestOutputModeSelect:
         assert dev.output_mode == SwitchConfiguration.OutputMode.DETACHED_SHORT_PRESS
 
     def test_created_for_relay(self):
-        relay = _fake_device(output_mode=True)
+        relay = _fake_device(output_mode=True, supports_switch_configuration=True)
         session = _make_session(micromodule_relays=[relay])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]
@@ -856,7 +857,7 @@ class TestOutputModeSelect:
         assert "OutputModeSelect" not in types
 
     def test_created_for_light_control(self):
-        lc = _fake_device(output_mode=True)
+        lc = _fake_device(output_mode=True, supports_switch_configuration=True)
         session = _make_session(micromodule_light_controls=[lc])
         entities = _setup(session)
         types = [type(e).__name__ for e in entities]

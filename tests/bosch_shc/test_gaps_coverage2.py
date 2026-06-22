@@ -608,7 +608,7 @@ class TestBatteryLevelSensorCreation:
         assert len(bat) == 1
         sensor = bat[0]
         # Verify __init__ ran: _attr_translation_key and _attr_unique_id must be set
-        assert sensor._attr_translation_key == "battery_level"
+        assert sensor._attr_name == "Battery Level"
         assert "md-has-bat" in sensor._attr_unique_id
         assert "battery_level" in sensor._attr_unique_id
 

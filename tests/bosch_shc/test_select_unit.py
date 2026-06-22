@@ -67,7 +67,7 @@ def _make_motion_select(sensitivity_name="HIGH"):
     dev = _ms_device(sensitivity_name=sensitivity_name)
     sel = MotionSensitivitySelect.__new__(MotionSensitivitySelect)
     sel._device = dev
-    sel._attr_translation_key = "motion_sensitivity"
+    sel._attr_name = "Motion Sensitivity"
     sel._attr_unique_id = f"{dev.root_device_id}_{dev.id}_motion_sensitivity"
     return sel
 
@@ -76,7 +76,7 @@ def _make_vibration_select(sensitivity_name="HIGH"):
     dev = _vs_device(sensitivity_name=sensitivity_name)
     sel = VibrationSensitivitySelect.__new__(VibrationSensitivitySelect)
     sel._device = dev
-    sel._attr_translation_key = "vibration_sensitivity"
+    sel._attr_name = "Vibration Sensitivity"
     sel._attr_unique_id = f"{dev.root_device_id}_{dev.id}_vibration_sensitivity"
     return sel
 
@@ -102,7 +102,7 @@ class TestMotionSensitivitySelectClassAttrs:
 
     def test_attr_name(self):
         sel = _make_motion_select()
-        assert sel._attr_translation_key == "motion_sensitivity"
+        assert sel._attr_name == "Motion Sensitivity"
 
 
 # ---------------------------------------------------------------------------
@@ -224,7 +224,7 @@ class TestVibrationSensitivitySelectClassAttrs:
 
     def test_attr_name(self):
         sel = _make_vibration_select()
-        assert sel._attr_translation_key == "vibration_sensitivity"
+        assert sel._attr_name == "Vibration Sensitivity"
 
 
 # ---------------------------------------------------------------------------

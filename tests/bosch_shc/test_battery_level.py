@@ -33,7 +33,7 @@ def _make_sensor(state):
         root_device_id="root-abc",
         id="dev-123",
     )
-    s._attr_translation_key = "battery_level"
+    s._attr_name = "Battery Level"
     s._attr_unique_id = "root-abc_dev-123_battery_level"
     return s
 
@@ -148,4 +148,4 @@ class TestBatteryLevelSensorMetadata:
         assert self._sensor()._attr_unique_id == "root-abc_dev-123_battery_level"
 
     def test_name(self):
-        assert self._sensor()._attr_translation_key == "battery_level"
+        assert self._sensor()._attr_name == "Battery Level"

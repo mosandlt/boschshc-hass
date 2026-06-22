@@ -153,7 +153,7 @@ def _setup_selects(session):
 class TestWalkTestButtonSetup:
     def test_walk_test_button_created_when_walk_state_present(self):
         from boschshcpy.services_impl import WalkTestService
-        md2 = _fake_md2(walk_state=WalkTestService.WalkState.UNKNOWN)
+        md2 = _fake_md2(walk_state=WalkTestService.WalkState.UNKNOWN, supports_walk_test=True)
         session = _make_button_session(motion_detectors2=[md2])
         entities = _setup_buttons(session)
         types = [type(e).__name__ for e in entities]
@@ -167,7 +167,8 @@ class TestWalkTestButtonSetup:
         assert "SHCWalkTestButton" not in types
 
     def test_walk_test_button_skipped_when_walk_state_is_none(self):
-        md2 = _fake_md2(walk_state=None)
+        # supports_walk_test=True but walk_state=None -> skipped at line 75
+        md2 = _fake_md2(walk_state=None, supports_walk_test=True)
         session = _make_button_session(motion_detectors2=[md2])
         entities = _setup_buttons(session)
         types = [type(e).__name__ for e in entities]
@@ -175,7 +176,7 @@ class TestWalkTestButtonSetup:
 
     def test_walk_test_stop_button_created_alongside_start(self):
         from boschshcpy.services_impl import WalkTestService
-        md2 = _fake_md2(walk_state=WalkTestService.WalkState.UNKNOWN)
+        md2 = _fake_md2(walk_state=WalkTestService.WalkState.UNKNOWN, supports_walk_test=True)
         session = _make_button_session(motion_detectors2=[md2])
         entities = _setup_buttons(session)
         types = [type(e).__name__ for e in entities]
@@ -299,7 +300,7 @@ class TestWalkStateSensor:
     def _make(self, walk_state_name="UNKNOWN"):
         from boschshcpy.services_impl import WalkTestService
         val = WalkTestService.WalkState[walk_state_name]
-        dev = _fake_md2(walk_state=val)
+        dev = _fake_md2(walk_state=val, supports_walk_test=True)
         s = WalkStateSensor.__new__(WalkStateSensor)
         s._device = dev
         s._attr_unique_id = f"{dev.root_device_id}_{dev.id}_walk_state"
@@ -409,13 +410,14 @@ class TestWalkStateSensorSetup:
 
     def test_walk_state_sensor_created_when_walk_state_present(self):
         from boschshcpy.services_impl import WalkTestService
-        md2 = _fake_md2(walk_state=WalkTestService.WalkState.UNKNOWN)
+        md2 = _fake_md2(walk_state=WalkTestService.WalkState.UNKNOWN, supports_walk_test=True)
         entities = self._run_sensor_setup([md2])
         types = [type(e).__name__ for e in entities]
         assert "WalkStateSensor" in types
 
     def test_walk_state_sensor_skipped_when_walk_state_none(self):
-        md2 = _fake_md2(walk_state=None)
+        # supports_walk_test=True but walk_state=None -> not created
+        md2 = _fake_md2(walk_state=None, supports_walk_test=True)
         entities = self._run_sensor_setup([md2])
         types = [type(e).__name__ for e in entities]
         assert "WalkStateSensor" not in types
@@ -510,7 +512,7 @@ class TestSmartSensitivitySecurityLevelSelect:
         assert calls[0][1] == SmartSensitivityControlService.MotionSensitivity.MIDDLE
 
     def test_created_when_get_smart_sensitivity_present(self):
-        md2 = _fake_md2(get_smart_sensitivity=lambda c: {"manualLevel": "HIGH"})
+        md2 = _fake_md2(get_smart_sensitivity=lambda c: {"manualLevel": "HIGH"}, supports_smart_sensitivity=True)
         session = _make_select_session(motion_detectors2=[md2])
         entities = _setup_selects(session)
         types = [type(e).__name__ for e in entities]
@@ -654,7 +656,10 @@ class TestSmartSensitivityComfortLevelSelect:
         assert calls[0][1] == SmartSensitivityControlService.MotionSensitivity.HIGH
 
     def test_created_when_guard_present(self):
-        md2 = _fake_md2(get_smart_sensitivity=lambda c: {"manualLevel": "MIDDLE"})
+        md2 = _fake_md2(
+            get_smart_sensitivity=lambda c: {"manualLevel": "MIDDLE"},
+            supports_smart_sensitivity=True,
+        )
         session = _make_select_session(motion_detectors2=[md2])
         entities = _setup_selects(session)
         types = [type(e).__name__ for e in entities]

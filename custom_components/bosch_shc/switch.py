@@ -758,7 +758,7 @@ async def async_setup_entry(
     ):
         if device_excluded(switch, config_entry.options):
             continue
-        if hasattr(switch, "humidity_warning_enabled"):
+        if getattr(switch, "humidity_warning_enabled", None) is not None:
             entities.append(
                 SHCSwitch(
                     device=switch,
