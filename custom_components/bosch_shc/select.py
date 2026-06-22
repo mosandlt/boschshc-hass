@@ -183,6 +183,8 @@ async def async_setup_entry(
             continue
         if not getattr(device, "supports_power_switch_configuration", False):
             continue
+        if getattr(device, "state_after_power_outage", None) is None:
+            continue
         entities.append(
             StateAfterPowerOutageSelect(
                 device=device,
@@ -217,14 +219,20 @@ async def async_setup_entry(
     ):
         if device_excluded(device, config_entry.options):
             continue
-        if getattr(device, "supports_display_direction", False):
+        if (
+            getattr(device, "supports_display_direction", False)
+            and getattr(device, "display_direction", None) is not None
+        ):
             entities.append(
                 DisplayDirectionSelect(
                     device=device,
                     entry_id=config_entry.entry_id,
                 )
             )
-        if getattr(device, "supports_displayed_temperature", False):
+        if (
+            getattr(device, "supports_displayed_temperature", False)
+            and getattr(device, "displayed_temperature", None) is not None
+        ):
             entities.append(
                 DisplayedTemperatureSelect(
                     device=device,
@@ -232,14 +240,20 @@ async def async_setup_entry(
                 )
             )
         # WallThermostatConfiguration: valve + heater type (ThermostatGen2 only).
-        if getattr(device, "supports_wall_thermostat_configuration", False):
+        if (
+            getattr(device, "supports_wall_thermostat_configuration", False)
+            and getattr(device, "valve_type", None) is not None
+        ):
             entities.append(
                 ValveTypeSelect(
                     device=device,
                     entry_id=config_entry.entry_id,
                 )
             )
-        if getattr(device, "supports_wall_thermostat_configuration", False):
+        if (
+            getattr(device, "supports_wall_thermostat_configuration", False)
+            and getattr(device, "heater_type", None) is not None
+        ):
             entities.append(
                 HeaterTypeSelect(
                     device=device,
@@ -247,7 +261,10 @@ async def async_setup_entry(
                 )
             )
         # TerminalConfiguration type (RoomThermostat2 only).
-        if getattr(device, "supports_terminal_configuration", False):
+        if (
+            getattr(device, "supports_terminal_configuration", False)
+            and getattr(device, "terminal_type", None) is not None
+        ):
             entities.append(
                 TerminalTypeSelect(
                     device=device,
@@ -262,21 +279,30 @@ async def async_setup_entry(
     ):
         if device_excluded(device, config_entry.options):
             continue
-        if getattr(device, "supports_switch_configuration", False):
+        if (
+            getattr(device, "supports_switch_configuration", False)
+            and getattr(device, "switch_type", None) is not None
+        ):
             entities.append(
                 SwitchTypeSelect(
                     device=device,
                     entry_id=config_entry.entry_id,
                 )
             )
-        if getattr(device, "supports_switch_configuration", False):
+        if (
+            getattr(device, "supports_switch_configuration", False)
+            and getattr(device, "actuator_type", None) is not None
+        ):
             entities.append(
                 ActuatorTypeSelect(
                     device=device,
                     entry_id=config_entry.entry_id,
                 )
             )
-        if getattr(device, "supports_switch_configuration", False):
+        if (
+            getattr(device, "supports_switch_configuration", False)
+            and getattr(device, "output_mode", None) is not None
+        ):
             entities.append(
                 OutputModeSelect(
                     device=device,
@@ -290,6 +316,8 @@ async def async_setup_entry(
         if device_excluded(device, config_entry.options):
             continue
         if not getattr(device, "supports_smart_sensitivity", False):
+            continue
+        if getattr(device, "get_smart_sensitivity", None) is None:
             continue
         entities.append(
             SmartSensitivitySecurityLevelSelect(

@@ -360,7 +360,8 @@ class TestSwitchSmartPlugCompactWarningSuppressed:
     """switch.py line 411 — warning_suppressed hasattr block on smart_plugs_compact."""
 
     def test_compact_plug_with_warning_suppressed_creates_entity(self):
-        plug = _fake_device(id="cp1", warning_suppressed=False)
+        plug = _fake_device(id="cp1", warning_suppressed=False,
+                            supports_power_switch_warning=True)
         session = _make_switch_session(smart_plugs_compact=[plug])
         entities = _run_switch_setup(session)
         keys = [getattr(e, "entity_description", None) and e.entity_description.key
@@ -392,7 +393,8 @@ class TestSwitchMicromoduleLightControlsSwapOutputs:
     """switch.py line 465 — swap_outputs hasattr block on micromodule_light_controls."""
 
     def test_light_control_with_swap_outputs_creates_entity(self):
-        dev = _fake_device(id="mlc1", swap_outputs=False)
+        dev = _fake_device(id="mlc1", swap_outputs=False,
+                           supports_switch_configuration=True)
         session = _make_switch_session(micromodule_light_controls=[dev])
         entities = _run_switch_setup(session)
         keys = [getattr(e, "entity_description", None) and e.entity_description.key

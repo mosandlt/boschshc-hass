@@ -349,7 +349,10 @@ async def async_setup_entry(
                 attr_name="Routing",
             )
         )
-        if hasattr(switch, "energy_saving_mode_enabled"):
+        if (
+            getattr(switch, "supports_energy_saving_mode", False)
+            and getattr(switch, "energy_saving_mode_enabled", None) is not None
+        ):
             entities.append(
                 SHCSwitch(
                     device=switch,
@@ -358,7 +361,10 @@ async def async_setup_entry(
                     attr_name="EnergySavingMode",
                 )
             )
-        if hasattr(switch, "warning_suppressed"):
+        if (
+            getattr(switch, "supports_power_switch_warning", False)
+            and getattr(switch, "warning_suppressed", None) is not None
+        ):
             entities.append(
                 SHCSwitch(
                     device=switch,
@@ -398,7 +404,10 @@ async def async_setup_entry(
                 description=SWITCH_TYPES["smartplugcompact"],
             )
         )
-        if hasattr(switch, "energy_saving_mode_enabled"):
+        if (
+            getattr(switch, "supports_energy_saving_mode", False)
+            and getattr(switch, "energy_saving_mode_enabled", None) is not None
+        ):
             entities.append(
                 SHCSwitch(
                     device=switch,
@@ -407,7 +416,10 @@ async def async_setup_entry(
                     attr_name="EnergySavingMode",
                 )
             )
-        if hasattr(switch, "warning_suppressed"):
+        if (
+            getattr(switch, "supports_power_switch_warning", False)
+            and getattr(switch, "warning_suppressed", None) is not None
+        ):
             entities.append(
                 SHCSwitch(
                     device=switch,
@@ -430,7 +442,10 @@ async def async_setup_entry(
                 description=SWITCH_TYPES["micromodule_relay_switch"],
             )
         )
-        if hasattr(switch, "swap_inputs"):
+        if (
+            getattr(switch, "supports_switch_configuration", False)
+            and getattr(switch, "swap_inputs", None) is not None
+        ):
             entities.append(
                 SHCSwitch(
                     device=switch,
@@ -439,7 +454,10 @@ async def async_setup_entry(
                     attr_name="SwapInputs",
                 )
             )
-        if hasattr(switch, "swap_outputs"):
+        if (
+            getattr(switch, "supports_switch_configuration", False)
+            and getattr(switch, "swap_outputs", None) is not None
+        ):
             entities.append(
                 SHCSwitch(
                     device=switch,
@@ -452,7 +470,10 @@ async def async_setup_entry(
     for device in getattr(session.device_helper, "micromodule_light_controls", []):
         if device_excluded(device, config_entry.options):
             continue
-        if hasattr(device, "swap_inputs"):
+        if (
+            getattr(device, "supports_switch_configuration", False)
+            and getattr(device, "swap_inputs", None) is not None
+        ):
             entities.append(
                 SHCSwitch(
                     device=device,
@@ -461,7 +482,10 @@ async def async_setup_entry(
                     attr_name="SwapInputs",
                 )
             )
-        if hasattr(device, "swap_outputs"):
+        if (
+            getattr(device, "supports_switch_configuration", False)
+            and getattr(device, "swap_outputs", None) is not None
+        ):
             entities.append(
                 SHCSwitch(
                     device=device,
@@ -719,7 +743,10 @@ async def async_setup_entry(
     for switch in getattr(session.device_helper, "twinguards", []):
         if device_excluded(switch, config_entry.options):
             continue
-        if hasattr(switch, "nightly_promise_enabled"):
+        if (
+            getattr(switch, "supports_nightly_promise", False)
+            and getattr(switch, "nightly_promise_enabled", None) is not None
+        ):
             entities.append(
                 SHCSwitch(
                     device=switch,
@@ -728,7 +755,10 @@ async def async_setup_entry(
                     attr_name="NightlyPromise",
                 )
             )
-        if hasattr(switch, "pre_alarm_enabled"):
+        if (
+            getattr(switch, "supports_smoke_sensitivity", False)
+            and getattr(switch, "pre_alarm_enabled", None) is not None
+        ):
             entities.append(
                 SHCSwitch(
                     device=switch,
@@ -741,7 +771,10 @@ async def async_setup_entry(
     for switch in getattr(session.device_helper, "smoke_detectors", []):
         if device_excluded(switch, config_entry.options):
             continue
-        if hasattr(switch, "pre_alarm_enabled"):
+        if (
+            getattr(switch, "supports_smoke_sensitivity", False)
+            and getattr(switch, "pre_alarm_enabled", None) is not None
+        ):
             entities.append(
                 SHCSwitch(
                     device=switch,
@@ -758,7 +791,10 @@ async def async_setup_entry(
     ):
         if device_excluded(switch, config_entry.options):
             continue
-        if getattr(switch, "humidity_warning_enabled", None) is not None:
+        if (
+            getattr(switch, "supports_display_configuration", False)
+            and getattr(switch, "humidity_warning_enabled", None) is not None
+        ):
             entities.append(
                 SHCSwitch(
                     device=switch,

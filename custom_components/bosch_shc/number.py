@@ -93,21 +93,30 @@ async def async_setup_entry(
     ):
         if device_excluded(device, config_entry.options):
             continue
-        if getattr(device, "supports_energy_saving_mode", False):
+        if (
+            getattr(device, "supports_energy_saving_mode", False)
+            and getattr(device, "power_threshold", None) is not None
+        ):
             entities.append(
                 PowerThresholdNumber(
                     device=device,
                     entry_id=config_entry.entry_id,
                 )
             )
-        if getattr(device, "supports_energy_saving_mode", False):
+        if (
+            getattr(device, "supports_energy_saving_mode", False)
+            and getattr(device, "enter_duration_seconds", None) is not None
+        ):
             entities.append(
                 EnterDurationNumber(
                     device=device,
                     entry_id=config_entry.entry_id,
                 )
             )
-        if getattr(device, "supports_led_brightness", False):
+        if (
+            getattr(device, "supports_led_brightness", False)
+            and getattr(device, "led_brightness", None) is not None
+        ):
             entities.append(
                 LedBrightnessNumber(
                     device=device,
@@ -121,14 +130,20 @@ async def async_setup_entry(
     ):
         if device_excluded(device, config_entry.options):
             continue
-        if getattr(device, "supports_display_configuration", False):
+        if (
+            getattr(device, "supports_display_configuration", False)
+            and getattr(device, "display_brightness", None) is not None
+        ):
             entities.append(
                 DisplayBrightnessNumber(
                     device=device,
                     entry_id=config_entry.entry_id,
                 )
             )
-        if getattr(device, "supports_display_configuration", False):
+        if (
+            getattr(device, "supports_display_configuration", False)
+            and getattr(device, "display_on_time", None) is not None
+        ):
             entities.append(
                 DisplayOnTimeNumber(
                     device=device,

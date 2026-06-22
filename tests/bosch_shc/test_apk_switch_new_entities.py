@@ -114,7 +114,7 @@ def _setup(session):
 
 
 def test_smartplug_with_energy_saving_creates_entity():
-    plug = _fake_device(energy_saving_mode_enabled=False)
+    plug = _fake_device(energy_saving_mode_enabled=False, supports_energy_saving_mode=True)
     session = _make_session(smart_plugs=[plug])
     entities = _setup(session)
     keys = [e.entity_description.key for e in entities]
@@ -130,7 +130,7 @@ def test_smartplug_without_energy_saving_skipped():
 
 
 def test_smartplug_energy_saving_unique_id():
-    plug = _fake_device(id="plug1", energy_saving_mode_enabled=True)
+    plug = _fake_device(id="plug1", energy_saving_mode_enabled=True, supports_energy_saving_mode=True)
     session = _make_session(smart_plugs=[plug])
     entities = _setup(session)
     esm = next(e for e in entities if e.entity_description.key == "energy_saving_mode_enabled")
@@ -161,7 +161,7 @@ def test_smartplug_energy_saving_is_on_false():
 
 
 def test_smartplugcompact_with_energy_saving_creates_entity():
-    plug = _fake_device(energy_saving_mode_enabled=False)
+    plug = _fake_device(energy_saving_mode_enabled=False, supports_energy_saving_mode=True)
     session = _make_session(smart_plugs_compact=[plug])
     entities = _setup(session)
     keys = [e.entity_description.key for e in entities]
@@ -182,7 +182,7 @@ def test_smartplugcompact_without_energy_saving_skipped():
 
 
 def test_smartplug_with_warning_suppressed_creates_entity():
-    plug = _fake_device(warning_suppressed=False)
+    plug = _fake_device(warning_suppressed=False, supports_power_switch_warning=True)
     session = _make_session(smart_plugs=[plug])
     entities = _setup(session)
     keys = [e.entity_description.key for e in entities]
@@ -216,7 +216,7 @@ def test_smartplug_warning_suppressed_is_on_false():
 
 
 def test_smartplug_warning_suppressed_unique_id():
-    plug = _fake_device(id="plug1", warning_suppressed=False)
+    plug = _fake_device(id="plug1", warning_suppressed=False, supports_power_switch_warning=True)
     session = _make_session(smart_plugs=[plug])
     entities = _setup(session)
     ws = next(e for e in entities if e.entity_description.key == "warning_suppressed")
@@ -229,7 +229,7 @@ def test_smartplug_warning_suppressed_unique_id():
 
 
 def test_twinguard_with_nightly_promise_creates_entity():
-    tg = _fake_device(nightly_promise_enabled=True)
+    tg = _fake_device(nightly_promise_enabled=True, supports_nightly_promise=True)
     session = _make_session(twinguards=[tg])
     entities = _setup(session)
     keys = [e.entity_description.key for e in entities]
@@ -254,7 +254,7 @@ def test_twinguard_nightly_promise_is_on():
 
 
 def test_twinguard_nightly_promise_unique_id():
-    tg = _fake_device(id="tg1", nightly_promise_enabled=False)
+    tg = _fake_device(id="tg1", nightly_promise_enabled=False, supports_nightly_promise=True)
     session = _make_session(twinguards=[tg])
     entities = _setup(session)
     np = next(e for e in entities if e.entity_description.key == "nightly_promise_enabled")
@@ -267,7 +267,7 @@ def test_twinguard_nightly_promise_unique_id():
 
 
 def test_twinguard_with_pre_alarm_creates_entity():
-    tg = _fake_device(pre_alarm_enabled=False)
+    tg = _fake_device(pre_alarm_enabled=False, supports_smoke_sensitivity=True)
     session = _make_session(twinguards=[tg])
     entities = _setup(session)
     keys = [e.entity_description.key for e in entities]
@@ -288,7 +288,7 @@ def test_twinguard_without_pre_alarm_skipped():
 
 
 def test_smoke_detector_with_pre_alarm_creates_entity():
-    sd = _fake_device(pre_alarm_enabled=False)
+    sd = _fake_device(pre_alarm_enabled=False, supports_smoke_sensitivity=True)
     session = _make_session(smoke_detectors=[sd])
     entities = _setup(session)
     keys = [e.entity_description.key for e in entities]
@@ -327,7 +327,7 @@ def test_pre_alarm_is_on_false():
 
 
 def test_thermostat_with_humidity_warning_creates_entity():
-    therm = _fake_device(humidity_warning_enabled=False)
+    therm = _fake_device(humidity_warning_enabled=False, supports_display_configuration=True)
     session = _make_session(thermostats=[therm])
     entities = _setup(session)
     keys = [e.entity_description.key for e in entities]
@@ -343,7 +343,7 @@ def test_thermostat_without_humidity_warning_skipped():
 
 
 def test_roomthermostat_with_humidity_warning_creates_entity():
-    rth = _fake_device(humidity_warning_enabled=True)
+    rth = _fake_device(humidity_warning_enabled=True, supports_display_configuration=True)
     session = _make_session(roomthermostats=[rth])
     entities = _setup(session)
     keys = [e.entity_description.key for e in entities]
@@ -360,7 +360,7 @@ def test_humidity_warning_is_on_true():
 
 
 def test_humidity_warning_unique_id():
-    therm = _fake_device(id="t1", humidity_warning_enabled=False)
+    therm = _fake_device(id="t1", humidity_warning_enabled=False, supports_display_configuration=True)
     session = _make_session(thermostats=[therm])
     entities = _setup(session)
     hw = next(e for e in entities if e.entity_description.key == "humidity_warning_enabled")
@@ -373,7 +373,7 @@ def test_humidity_warning_unique_id():
 
 
 def test_relay_with_swap_inputs_creates_entity():
-    relay = _fake_device(swap_inputs=False, child_lock=False)
+    relay = _fake_device(swap_inputs=False, child_lock=False, supports_switch_configuration=True)
     session = _make_session(micromodule_relays=[relay])
     entities = _setup(session)
     keys = [e.entity_description.key for e in entities]
@@ -389,7 +389,7 @@ def test_relay_without_swap_inputs_skipped():
 
 
 def test_relay_with_swap_outputs_creates_entity():
-    relay = _fake_device(swap_outputs=True, child_lock=False)
+    relay = _fake_device(swap_outputs=True, child_lock=False, supports_switch_configuration=True)
     session = _make_session(micromodule_relays=[relay])
     entities = _setup(session)
     keys = [e.entity_description.key for e in entities]
@@ -433,7 +433,7 @@ def test_swap_outputs_is_on_true():
 
 def test_swap_outputs_unique_id():
     relay = _fake_device(id="r1", swap_inputs=False, swap_outputs=False,
-                         child_lock=False)
+                         child_lock=False, supports_switch_configuration=True)
     session = _make_session(micromodule_relays=[relay])
     entities = _setup(session)
     so = next(e for e in entities if e.entity_description.key == "swap_outputs")
@@ -442,7 +442,7 @@ def test_swap_outputs_unique_id():
 
 def test_swap_inputs_unique_id():
     relay = _fake_device(id="r1", swap_inputs=False, swap_outputs=False,
-                         child_lock=False)
+                         child_lock=False, supports_switch_configuration=True)
     session = _make_session(micromodule_relays=[relay])
     entities = _setup(session)
     si = next(e for e in entities if e.entity_description.key == "swap_inputs")
@@ -455,7 +455,7 @@ def test_swap_inputs_unique_id():
 
 
 def test_light_control_with_swap_inputs_creates_entity():
-    lc = _fake_device(swap_inputs=False)
+    lc = _fake_device(swap_inputs=False, supports_switch_configuration=True)
     session = _make_session(micromodule_light_controls=[lc])
     entities = _setup(session)
     keys = [e.entity_description.key for e in entities]
