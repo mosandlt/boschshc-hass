@@ -3,15 +3,13 @@
 Targets the remaining uncovered lines after the main APK test files:
 
 button.py  72   — motion_detectors2 device_excluded continue
-button.py  220  — SHCWalkTestButton.press async path (loop.run_until_complete succeeds)
-button.py  261  — SHCWalkTestStopButton.press async path (loop.run_until_complete succeeds)
 
 number.py  95   — smart_plugs/compact device_excluded continue
-number.py  143  — motion_detectors2 device_excluded continue
 number.py  556  — DisplayOnTimeNumber.native_step returns float from service attr
 
 select.py  196-197 — smoke_sensitivity AttributeError → continue
 select.py  379      — StateAfterPowerOutageSelect.current_option val is None → return None
+select.py  motion_detectors2 device_excluded continue
 
 switch.py  411  — warning_suppressed hasattr block on smart_plugs_compact
 switch.py  454  — micromodule_light_controls device_excluded continue
@@ -110,68 +108,6 @@ class TestButtonMotionDetectors2DeviceExcluded:
         assert not any("md2-excl" in uid for uid in ids)
 
 
-class TestSHCWalkTestButtonAsyncPath:
-    """button.py line 220 — press() via loop.run_until_complete (non-RuntimeError path)."""
-
-    def test_press_via_run_until_complete(self):
-        """When async_set_walk_state_request exists and loop.run_until_complete succeeds."""
-        from custom_components.bosch_shc.button import SHCWalkTestButton
-        from boschshcpy.services_impl import WalkTestService
-
-        called_with = []
-
-        async def _fake_set(req):
-            called_with.append(req)
-
-        device = _fake_device()
-        device.async_set_walk_state_request = _fake_set
-
-        btn = SHCWalkTestButton.__new__(SHCWalkTestButton)
-        btn._device = device
-
-        # Use a fresh event loop so run_until_complete can execute.
-        import asyncio as _asyncio
-        loop = _asyncio.new_event_loop()
-        try:
-            import unittest.mock as _mock
-            with _mock.patch("asyncio.get_event_loop", return_value=loop):
-                btn.press()
-        finally:
-            loop.close()
-
-        assert called_with == [WalkTestService.WalkStateRequest.WALK_STATE_START]
-
-
-class TestSHCWalkTestStopButtonAsyncPath:
-    """button.py line 261 — SHCWalkTestStopButton.press() via loop.run_until_complete."""
-
-    def test_press_via_run_until_complete(self):
-        from custom_components.bosch_shc.button import SHCWalkTestStopButton
-        from boschshcpy.services_impl import WalkTestService
-
-        called_with = []
-
-        async def _fake_set(req):
-            called_with.append(req)
-
-        device = _fake_device()
-        device.async_set_walk_state_request = _fake_set
-
-        btn = SHCWalkTestStopButton.__new__(SHCWalkTestStopButton)
-        btn._device = device
-
-        import asyncio as _asyncio
-        loop = _asyncio.new_event_loop()
-        try:
-            import unittest.mock as _mock
-            with _mock.patch("asyncio.get_event_loop", return_value=loop):
-                btn.press()
-        finally:
-            loop.close()
-
-        assert called_with == [WalkTestService.WalkStateRequest.STOP]
-
-
 # ===========================================================================
 # NUMBER.PY
 # ===========================================================================
@@ -219,17 +155,6 @@ class TestNumberSmartPlugCompactDeviceExcluded:
         entities = _run_number_setup(session, options=_excl("sp-excl"))
         ids = [getattr(getattr(e, "_device", None), "id", None) for e in entities]
         assert "sp-excl" not in ids
-
-
-class TestNumberMotionDetectors2DeviceExcluded:
-    """number.py line 143 — device_excluded continue in motion_detectors2 loop."""
-
-    def test_excluded_md2_not_added(self):
-        md2 = _fake_device(id="md2-excl", get_smart_sensitivity=lambda ctx: {})
-        session = _make_number_session(motion_detectors2=[md2])
-        entities = _run_number_setup(session, options=_excl("md2-excl"))
-        ids = [getattr(getattr(e, "_device", None), "id", None) for e in entities]
-        assert "md2-excl" not in ids
 
 
 class TestDisplayOnTimeNativeStep:
@@ -349,6 +274,17 @@ class TestStateAfterPowerOutageCurrentOptionNone:
         # Need options set so the logic gets to the None check
         sel._attr_options = ["ON", "OFF", "PREVIOUS_STATE"]
         assert sel.current_option is None
+
+
+class TestSelectMotionDetectors2DeviceExcluded:
+    """select.py — device_excluded continue in motion_detectors2 loop."""
+
+    def test_excluded_md2_not_added(self):
+        md2 = _fake_device(id="md2-excl", get_smart_sensitivity=lambda ctx: {})
+        session = _make_select_session(motion_detectors2=[md2])
+        entities = _run_select_setup(session, options=_excl("md2-excl"))
+        ids = [getattr(getattr(e, "_device", None), "id", None) for e in entities]
+        assert "md2-excl" not in ids
 
 
 # ===========================================================================

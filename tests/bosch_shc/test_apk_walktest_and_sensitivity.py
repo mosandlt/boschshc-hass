@@ -1,11 +1,11 @@
-"""Tests for APK-batch 3 WalkTest entities + SmartSensitivity number entities.
+"""Tests for APK-batch 3 WalkTest entities + SmartSensitivity select entities.
 
 Covers:
 - SHCWalkTestButton (start)
 - SHCWalkTestStopButton (stop)
 - WalkStateSensor
-- SmartSensitivitySecurityLevelNumber
-- SmartSensitivityComfortLevelNumber
+- SmartSensitivitySecurityLevelSelect
+- SmartSensitivityComfortLevelSelect
 
 Run with:
   PYTHONPATH="<lib>:<hass>" PYTEST_DISABLE_PLUGIN_AUTOLOAD=1
@@ -24,10 +24,10 @@ from custom_components.bosch_shc.button import (
     async_setup_entry as button_setup_entry,
 )
 from custom_components.bosch_shc.sensor import WalkStateSensor
-from custom_components.bosch_shc.number import (
-    SmartSensitivitySecurityLevelNumber,
-    SmartSensitivityComfortLevelNumber,
-    async_setup_entry as number_setup_entry,
+from custom_components.bosch_shc.select import (
+    SmartSensitivitySecurityLevelSelect,
+    SmartSensitivityComfortLevelSelect,
+    async_setup_entry as select_setup_entry,
 )
 from custom_components.bosch_shc.const import DATA_SESSION, DATA_SHC, DOMAIN
 
@@ -61,13 +61,18 @@ def _make_button_session(**helper_lists):
     )
 
 
-def _make_number_session(**helper_lists):
+def _make_select_session(**helper_lists):
     defaults = dict(
+        motion_detectors2=[],
+        shutter_contacts2=[],
+        smart_plugs=[],
+        smart_plugs_compact=[],
+        smoke_detectors=[],
+        twinguards=[],
         thermostats=[],
         roomthermostats=[],
-        micromodule_impulse_relays=[],
-        heating_circuits=[],
-        motion_detectors2=[],
+        micromodule_relays=[],
+        micromodule_light_controls=[],
     )
     defaults.update(helper_lists)
     device_helper = SimpleNamespace(**defaults)
@@ -95,12 +100,13 @@ def _make_button_hass_and_entry(session):
     return hass, config_entry
 
 
-def _make_number_hass_and_entry(session):
+def _make_select_hass_and_entry(session):
     entry_id = "E1"
     hass = SimpleNamespace(
         data={DOMAIN: {entry_id: {DATA_SESSION: session}}}
     )
     config_entry = SimpleNamespace(options={}, entry_id=entry_id,
+                                   unique_id="UID1",
                                    async_on_unload=MagicMock())
     return hass, config_entry
 
@@ -120,19 +126,23 @@ def _setup_buttons(session):
     return asyncio.run(_async_setup_buttons(session))
 
 
-async def _async_setup_numbers(session):
-    hass, config_entry = _make_number_hass_and_entry(session)
+async def _async_setup_selects(session):
+    hass, config_entry = _make_select_hass_and_entry(session)
     entities = []
 
     def add_entities(new_ents, *args, **kwargs):
         entities.extend(new_ents)
 
-    await number_setup_entry(hass, config_entry, add_entities)
+    with patch(
+        "custom_components.bosch_shc.select.SHCShutterContact2Plus",
+        new=type("SHCShutterContact2Plus", (), {}),
+    ):
+        await select_setup_entry(hass, config_entry, add_entities)
     return entities
 
 
-def _setup_numbers(session):
-    return asyncio.run(_async_setup_numbers(session))
+def _setup_selects(session):
+    return asyncio.run(_async_setup_selects(session))
 
 
 # ---------------------------------------------------------------------------
@@ -197,45 +207,36 @@ class TestSHCWalkTestButton:
         b = self._make()
         assert b._attr_unique_id == "root1_md1_walk_test"
 
-    def test_press_calls_service_set_walk_state_request(self):
+    def test_async_press_calls_async_set_walk_state_request(self):
         from boschshcpy.services_impl import WalkTestService
         calls = []
-        svc = SimpleNamespace(
-            set_walk_state_request=lambda v: calls.append(v)
-        )
-        dev = _fake_md2(_walktest_service=svc)
-        b = SHCWalkTestButton.__new__(SHCWalkTestButton)
-        b._device = dev
-        b.press()
-        assert calls == [WalkTestService.WalkStateRequest.WALK_STATE_START]
-
-    def test_press_no_service_does_not_raise(self):
-        dev = _fake_md2()  # no _walktest_service
-        b = SHCWalkTestButton.__new__(SHCWalkTestButton)
-        b._device = dev
-        b.press()  # must not raise
-
-    def test_press_with_async_setter(self):
-        """When device has async_set_walk_state_request, press falls back to service."""
-        from boschshcpy.services_impl import WalkTestService
-        calls = []
-        svc = SimpleNamespace(
-            set_walk_state_request=lambda v: calls.append(v)
-        )
 
         async def _async_setter(value):
-            pass
+            calls.append(value)
 
-        dev = _fake_md2(
-            async_set_walk_state_request=_async_setter,
-            _walktest_service=svc,
-        )
+        dev = _fake_md2(async_set_walk_state_request=_async_setter)
         b = SHCWalkTestButton.__new__(SHCWalkTestButton)
         b._device = dev
-        # In test context there's no running loop so RuntimeError is caught
-        # and service.set_walk_state_request is called.
-        b.press()
-        assert WalkTestService.WalkStateRequest.WALK_STATE_START in calls
+        asyncio.run(b.async_press())
+        assert calls == [WalkTestService.WalkStateRequest.WALK_STATE_START]
+
+    def test_async_press_with_real_enum_value(self):
+        from boschshcpy.services_impl import WalkTestService
+        received = []
+
+        async def _setter(value):
+            received.append(value)
+
+        dev = _fake_md2(async_set_walk_state_request=_setter)
+        b = SHCWalkTestButton.__new__(SHCWalkTestButton)
+        b._device = dev
+        asyncio.run(b.async_press())
+        assert len(received) == 1
+        assert received[0] == WalkTestService.WalkStateRequest.WALK_STATE_START
+
+    def test_icon(self):
+        b = self._make()
+        assert b._attr_icon == "mdi:walk"
 
 
 # ---------------------------------------------------------------------------
@@ -256,42 +257,33 @@ class TestSHCWalkTestStopButton:
         b = self._make()
         assert b._attr_unique_id == "root1_md1_walk_test_stop"
 
-    def test_press_calls_service_stop(self):
+    def test_async_press_calls_async_set_walk_state_request_stop(self):
         from boschshcpy.services_impl import WalkTestService
         calls = []
-        svc = SimpleNamespace(
-            set_walk_state_request=lambda v: calls.append(v)
-        )
-        dev = _fake_md2(_walktest_service=svc)
-        b = SHCWalkTestStopButton.__new__(SHCWalkTestStopButton)
-        b._device = dev
-        b.press()
-        assert calls == [WalkTestService.WalkStateRequest.STOP]
-
-    def test_press_no_service_does_not_raise(self):
-        dev = _fake_md2()  # no _walktest_service
-        b = SHCWalkTestStopButton.__new__(SHCWalkTestStopButton)
-        b._device = dev
-        b.press()  # must not raise
-
-    def test_press_with_async_setter_falls_back_to_service(self):
-        from boschshcpy.services_impl import WalkTestService
-        calls = []
-        svc = SimpleNamespace(
-            set_walk_state_request=lambda v: calls.append(v)
-        )
 
         async def _async_setter(value):
-            pass
+            calls.append(value)
 
-        dev = _fake_md2(
-            async_set_walk_state_request=_async_setter,
-            _walktest_service=svc,
-        )
+        dev = _fake_md2(async_set_walk_state_request=_async_setter)
         b = SHCWalkTestStopButton.__new__(SHCWalkTestStopButton)
         b._device = dev
-        b.press()
-        assert WalkTestService.WalkStateRequest.STOP in calls
+        asyncio.run(b.async_press())
+        assert calls == [WalkTestService.WalkStateRequest.WALK_STATE_STOP]
+
+    def test_async_press_uses_walk_state_stop_not_start(self):
+        from boschshcpy.services_impl import WalkTestService
+        received = []
+
+        async def _setter(value):
+            received.append(value)
+
+        dev = _fake_md2(async_set_walk_state_request=_setter)
+        b = SHCWalkTestStopButton.__new__(SHCWalkTestStopButton)
+        b._device = dev
+        asyncio.run(b.async_press())
+        assert len(received) == 1
+        assert received[0] == WalkTestService.WalkStateRequest.WALK_STATE_STOP
+        assert received[0] != WalkTestService.WalkStateRequest.WALK_STATE_START
 
     def test_icon(self):
         b = self._make()
@@ -326,9 +318,9 @@ class TestWalkStateSensor:
         s = self._make("WALK_TEST_STARTED")
         assert s.native_value == "WALK_TEST_STARTED"
 
-    def test_native_value_stopped(self):
-        s = self._make("STOPPED")
-        assert s.native_value == "STOPPED"
+    def test_native_value_walk_test_stopped(self):
+        s = self._make("WALK_TEST_STOPPED")
+        assert s.native_value == "WALK_TEST_STOPPED"
 
     def test_native_value_none_when_walk_state_is_none(self):
         dev = _fake_md2(walk_state=None)
@@ -345,7 +337,7 @@ class TestWalkStateSensor:
     def test_options_list(self):
         s = self._make()
         assert "WALK_TEST_STARTED" in s._attr_options
-        assert "STOPPED" in s._attr_options
+        assert "WALK_TEST_STOPPED" in s._attr_options
         assert "UNKNOWN" in s._attr_options
 
 
@@ -430,174 +422,289 @@ class TestWalkStateSensorSetup:
 
 
 # ---------------------------------------------------------------------------
-# SmartSensitivitySecurityLevelNumber
+# SmartSensitivitySecurityLevelSelect
 # ---------------------------------------------------------------------------
 
 
-class TestSmartSensitivitySecurityLevelNumber:
-    def _make(self, manual_level=3):
-        sensitivity_dict = {"context": "SECURITY", "automaticLevel": 5, "manualLevel": manual_level}
+class TestSmartSensitivitySecurityLevelSelect:
+    def _make(self, manual_level="HIGH"):
+        from boschshcpy.services_impl import SmartSensitivityControlService
+        level_val = SmartSensitivityControlService.MotionSensitivity[manual_level]
+        sensitivity_dict = {
+            "context": "SECURITY",
+            "automaticLevel": "HIGH",
+            "manualLevel": level_val,
+        }
 
         def _get_sensitivity(c):
             return sensitivity_dict
 
         dev = _fake_md2(get_smart_sensitivity=_get_sensitivity)
-        n = SmartSensitivitySecurityLevelNumber.__new__(SmartSensitivitySecurityLevelNumber)
-        n._device = dev
-        n._attr_unique_id = (
+        e = SmartSensitivitySecurityLevelSelect.__new__(
+            SmartSensitivitySecurityLevelSelect
+        )
+        e._device = dev
+        e._attr_unique_id = (
             f"{dev.root_device_id}_{dev.id}_smart_sensitivity_security"
         )
-        n._attr_name = "Security Sensitivity Level"
-        return n
+        e._attr_name = "Security Sensitivity Level"
+        return e
 
     def test_unique_id(self):
-        n = self._make()
-        assert n._attr_unique_id == "root1_md1_smart_sensitivity_security"
+        e = self._make()
+        assert e._attr_unique_id == "root1_md1_smart_sensitivity_security"
 
-    def test_native_value_returns_manual_level(self):
-        n = self._make(manual_level=7)
-        assert n.native_value == 7.0
+    def test_current_option_high(self):
+        e = self._make("HIGH")
+        assert e.current_option == "HIGH"
 
-    def test_native_value_none_when_get_returns_none(self):
+    def test_current_option_middle(self):
+        e = self._make("MIDDLE")
+        assert e.current_option == "MIDDLE"
+
+    def test_current_option_low(self):
+        e = self._make("LOW")
+        assert e.current_option == "LOW"
+
+    def test_current_option_none_when_get_returns_none(self):
         def _get_none(c):
             return None
 
         dev = _fake_md2(get_smart_sensitivity=_get_none)
-        n = SmartSensitivitySecurityLevelNumber.__new__(SmartSensitivitySecurityLevelNumber)
-        n._device = dev
-        assert n.native_value is None
+        e = SmartSensitivitySecurityLevelSelect.__new__(
+            SmartSensitivitySecurityLevelSelect
+        )
+        e._device = dev
+        assert e.current_option is None
 
-    def test_set_native_value_calls_service(self):
+    def test_current_option_none_when_manual_level_absent(self):
+        def _get_no_level(c):
+            return {"context": "SECURITY"}  # no manualLevel key
+
+        dev = _fake_md2(get_smart_sensitivity=_get_no_level)
+        e = SmartSensitivitySecurityLevelSelect.__new__(
+            SmartSensitivitySecurityLevelSelect
+        )
+        e._device = dev
+        assert e.current_option is None
+
+    def test_async_select_option_calls_device_setter(self):
         from boschshcpy.services_impl import SmartSensitivityControlService
         calls = []
         ctx = SmartSensitivityControlService.SmartSensitivityContext.SECURITY
-        svc = SimpleNamespace(
-            set_manual_level=lambda c, v: calls.append((c, v))
-        )
+
+        async def _async_setter(c, v):
+            calls.append((c, v))
+
         dev = _fake_md2(
-            get_smart_sensitivity=lambda c: {"manualLevel": 5},
-            _smart_sensitivity_control_service=svc,
+            get_smart_sensitivity=lambda c: {"manualLevel": "HIGH"},
+            async_set_smart_sensitivity_manual_level=_async_setter,
         )
-        n = SmartSensitivitySecurityLevelNumber.__new__(SmartSensitivitySecurityLevelNumber)
-        n._device = dev
-        n.set_native_value(8.0)
+        e = SmartSensitivitySecurityLevelSelect.__new__(
+            SmartSensitivitySecurityLevelSelect
+        )
+        e._device = dev
+        asyncio.run(e.async_select_option("MIDDLE"))
         assert len(calls) == 1
         assert calls[0][0] == ctx
-        assert calls[0][1] == 8
-
-    def test_set_native_value_no_service_does_not_raise(self):
-        dev = _fake_md2(get_smart_sensitivity=lambda c: {"manualLevel": 5})
-        n = SmartSensitivitySecurityLevelNumber.__new__(SmartSensitivitySecurityLevelNumber)
-        n._device = dev
-        n.set_native_value(3.0)  # must not raise
+        assert calls[0][1] == SmartSensitivityControlService.MotionSensitivity.MIDDLE
 
     def test_created_when_get_smart_sensitivity_present(self):
-        md2 = _fake_md2(get_smart_sensitivity=lambda c: {"manualLevel": 5})
-        session = _make_number_session(motion_detectors2=[md2])
-        entities = _setup_numbers(session)
+        md2 = _fake_md2(get_smart_sensitivity=lambda c: {"manualLevel": "HIGH"})
+        session = _make_select_session(motion_detectors2=[md2])
+        entities = _setup_selects(session)
         types = [type(e).__name__ for e in entities]
-        assert "SmartSensitivitySecurityLevelNumber" in types
+        assert "SmartSensitivitySecurityLevelSelect" in types
 
     def test_skipped_when_get_smart_sensitivity_absent(self):
         md2 = _fake_md2()  # no get_smart_sensitivity attr
-        session = _make_number_session(motion_detectors2=[md2])
-        entities = _setup_numbers(session)
+        session = _make_select_session(motion_detectors2=[md2])
+        entities = _setup_selects(session)
         types = [type(e).__name__ for e in entities]
-        assert "SmartSensitivitySecurityLevelNumber" not in types
+        assert "SmartSensitivitySecurityLevelSelect" not in types
 
     def test_entity_category_config(self):
         from homeassistant.helpers.entity import EntityCategory
-        n = SmartSensitivitySecurityLevelNumber.__new__(SmartSensitivitySecurityLevelNumber)
-        assert n._attr_entity_category == EntityCategory.CONFIG
+        e = SmartSensitivitySecurityLevelSelect.__new__(
+            SmartSensitivitySecurityLevelSelect
+        )
+        assert e._attr_entity_category == EntityCategory.CONFIG
 
-    def test_native_min_value(self):
-        n = SmartSensitivitySecurityLevelNumber.__new__(SmartSensitivitySecurityLevelNumber)
-        assert n._attr_native_min_value == 0.0
+    def test_options_list_contains_high_middle_low(self):
+        e = SmartSensitivitySecurityLevelSelect.__new__(
+            SmartSensitivitySecurityLevelSelect
+        )
+        assert "HIGH" in e._attr_options
+        assert "MIDDLE" in e._attr_options
+        assert "LOW" in e._attr_options
 
-    def test_native_max_value(self):
-        n = SmartSensitivitySecurityLevelNumber.__new__(SmartSensitivitySecurityLevelNumber)
-        assert n._attr_native_max_value == 10.0
+    def test_current_option_string_level(self):
+        """level may be a plain string (not an enum) — should still work."""
+        def _get_str_level(c):
+            return {"context": "SECURITY", "manualLevel": "LOW"}
 
-    def test_native_step(self):
-        n = SmartSensitivitySecurityLevelNumber.__new__(SmartSensitivitySecurityLevelNumber)
-        assert n._attr_native_step == 1.0
+        dev = _fake_md2(get_smart_sensitivity=_get_str_level)
+        e = SmartSensitivitySecurityLevelSelect.__new__(
+            SmartSensitivitySecurityLevelSelect
+        )
+        e._device = dev
+        assert e.current_option == "LOW"
+
+    def test_current_option_none_when_name_not_in_options(self):
+        """Level has .name but it is not in HIGH/MIDDLE/LOW (e.g. UNKNOWN enum)."""
+        from boschshcpy.services_impl import SmartSensitivityControlService
+        unknown = SmartSensitivityControlService.MotionSensitivity.UNKNOWN
+
+        def _get_unknown(c):
+            return {"context": "SECURITY", "manualLevel": unknown}
+
+        dev = _fake_md2(get_smart_sensitivity=_get_unknown)
+        e = SmartSensitivitySecurityLevelSelect.__new__(
+            SmartSensitivitySecurityLevelSelect
+        )
+        e._device = dev
+        assert e.current_option is None
 
 
 # ---------------------------------------------------------------------------
-# SmartSensitivityComfortLevelNumber
+# SmartSensitivityComfortLevelSelect
 # ---------------------------------------------------------------------------
 
 
-class TestSmartSensitivityComfortLevelNumber:
-    def _make(self, manual_level=2):
+class TestSmartSensitivityComfortLevelSelect:
+    def _make(self, manual_level="MIDDLE"):
+        from boschshcpy.services_impl import SmartSensitivityControlService
+        level_val = SmartSensitivityControlService.MotionSensitivity[manual_level]
+
         def _get_sensitivity(c):
-            return {"context": "COMFORT", "automaticLevel": 3, "manualLevel": manual_level}
+            return {
+                "context": "COMFORT",
+                "automaticLevel": "MIDDLE",
+                "manualLevel": level_val,
+            }
 
         dev = _fake_md2(get_smart_sensitivity=_get_sensitivity)
-        n = SmartSensitivityComfortLevelNumber.__new__(SmartSensitivityComfortLevelNumber)
-        n._device = dev
-        n._attr_unique_id = (
+        e = SmartSensitivityComfortLevelSelect.__new__(
+            SmartSensitivityComfortLevelSelect
+        )
+        e._device = dev
+        e._attr_unique_id = (
             f"{dev.root_device_id}_{dev.id}_smart_sensitivity_comfort"
         )
-        n._attr_name = "Comfort Sensitivity Level"
-        return n
+        e._attr_name = "Comfort Sensitivity Level"
+        return e
 
     def test_unique_id(self):
-        n = self._make()
-        assert n._attr_unique_id == "root1_md1_smart_sensitivity_comfort"
+        e = self._make()
+        assert e._attr_unique_id == "root1_md1_smart_sensitivity_comfort"
 
-    def test_native_value_returns_manual_level(self):
-        n = self._make(manual_level=4)
-        assert n.native_value == 4.0
+    def test_current_option_middle(self):
+        e = self._make("MIDDLE")
+        assert e.current_option == "MIDDLE"
 
-    def test_native_value_none_when_get_returns_none(self):
+    def test_current_option_high(self):
+        e = self._make("HIGH")
+        assert e.current_option == "HIGH"
+
+    def test_current_option_low(self):
+        e = self._make("LOW")
+        assert e.current_option == "LOW"
+
+    def test_current_option_none_when_get_returns_none(self):
         def _get_none(c):
             return None
 
         dev = _fake_md2(get_smart_sensitivity=_get_none)
-        n = SmartSensitivityComfortLevelNumber.__new__(SmartSensitivityComfortLevelNumber)
-        n._device = dev
-        assert n.native_value is None
+        e = SmartSensitivityComfortLevelSelect.__new__(
+            SmartSensitivityComfortLevelSelect
+        )
+        e._device = dev
+        assert e.current_option is None
 
-    def test_set_native_value_calls_service(self):
+    def test_current_option_none_when_manual_level_absent(self):
+        def _get_no_level(c):
+            return {"context": "COMFORT"}  # no manualLevel key
+
+        dev = _fake_md2(get_smart_sensitivity=_get_no_level)
+        e = SmartSensitivityComfortLevelSelect.__new__(
+            SmartSensitivityComfortLevelSelect
+        )
+        e._device = dev
+        assert e.current_option is None
+
+    def test_async_select_option_calls_device_setter(self):
         from boschshcpy.services_impl import SmartSensitivityControlService
         calls = []
         ctx = SmartSensitivityControlService.SmartSensitivityContext.COMFORT
-        svc = SimpleNamespace(
-            set_manual_level=lambda c, v: calls.append((c, v))
-        )
+
+        async def _async_setter(c, v):
+            calls.append((c, v))
+
         dev = _fake_md2(
-            get_smart_sensitivity=lambda c: {"manualLevel": 2},
-            _smart_sensitivity_control_service=svc,
+            get_smart_sensitivity=lambda c: {"manualLevel": "MIDDLE"},
+            async_set_smart_sensitivity_manual_level=_async_setter,
         )
-        n = SmartSensitivityComfortLevelNumber.__new__(SmartSensitivityComfortLevelNumber)
-        n._device = dev
-        n.set_native_value(5.0)
+        e = SmartSensitivityComfortLevelSelect.__new__(
+            SmartSensitivityComfortLevelSelect
+        )
+        e._device = dev
+        asyncio.run(e.async_select_option("HIGH"))
         assert len(calls) == 1
         assert calls[0][0] == ctx
-        assert calls[0][1] == 5
-
-    def test_set_native_value_no_service_does_not_raise(self):
-        dev = _fake_md2(get_smart_sensitivity=lambda c: {"manualLevel": 2})
-        n = SmartSensitivityComfortLevelNumber.__new__(SmartSensitivityComfortLevelNumber)
-        n._device = dev
-        n.set_native_value(4.0)  # must not raise
+        assert calls[0][1] == SmartSensitivityControlService.MotionSensitivity.HIGH
 
     def test_created_when_guard_present(self):
-        md2 = _fake_md2(get_smart_sensitivity=lambda c: {"manualLevel": 2})
-        session = _make_number_session(motion_detectors2=[md2])
-        entities = _setup_numbers(session)
+        md2 = _fake_md2(get_smart_sensitivity=lambda c: {"manualLevel": "MIDDLE"})
+        session = _make_select_session(motion_detectors2=[md2])
+        entities = _setup_selects(session)
         types = [type(e).__name__ for e in entities]
-        assert "SmartSensitivityComfortLevelNumber" in types
+        assert "SmartSensitivityComfortLevelSelect" in types
 
     def test_skipped_when_guard_absent(self):
         md2 = _fake_md2()  # no get_smart_sensitivity attr
-        session = _make_number_session(motion_detectors2=[md2])
-        entities = _setup_numbers(session)
+        session = _make_select_session(motion_detectors2=[md2])
+        entities = _setup_selects(session)
         types = [type(e).__name__ for e in entities]
-        assert "SmartSensitivityComfortLevelNumber" not in types
+        assert "SmartSensitivityComfortLevelSelect" not in types
 
     def test_entity_category_config(self):
         from homeassistant.helpers.entity import EntityCategory
-        n = SmartSensitivityComfortLevelNumber.__new__(SmartSensitivityComfortLevelNumber)
-        assert n._attr_entity_category == EntityCategory.CONFIG
+        e = SmartSensitivityComfortLevelSelect.__new__(
+            SmartSensitivityComfortLevelSelect
+        )
+        assert e._attr_entity_category == EntityCategory.CONFIG
+
+    def test_options_list_contains_high_middle_low(self):
+        e = SmartSensitivityComfortLevelSelect.__new__(
+            SmartSensitivityComfortLevelSelect
+        )
+        assert "HIGH" in e._attr_options
+        assert "MIDDLE" in e._attr_options
+        assert "LOW" in e._attr_options
+
+    def test_current_option_string_level(self):
+        """level may be a plain string (not an enum) — should still work."""
+        def _get_str_level(c):
+            return {"context": "COMFORT", "manualLevel": "HIGH"}
+
+        dev = _fake_md2(get_smart_sensitivity=_get_str_level)
+        e = SmartSensitivityComfortLevelSelect.__new__(
+            SmartSensitivityComfortLevelSelect
+        )
+        e._device = dev
+        assert e.current_option == "HIGH"
+
+    def test_current_option_none_when_name_not_in_options(self):
+        """Level has .name but it is not in HIGH/MIDDLE/LOW (e.g. UNKNOWN enum)."""
+        from boschshcpy.services_impl import SmartSensitivityControlService
+        unknown = SmartSensitivityControlService.MotionSensitivity.UNKNOWN
+
+        def _get_unknown(c):
+            return {"context": "COMFORT", "manualLevel": unknown}
+
+        dev = _fake_md2(get_smart_sensitivity=_get_unknown)
+        e = SmartSensitivityComfortLevelSelect.__new__(
+            SmartSensitivityComfortLevelSelect
+        )
+        e._device = dev
+        assert e.current_option is None

@@ -198,8 +198,7 @@ class SHCWalkTestButton(SHCEntity, ButtonEntity):
 
     The WalkTest service is optional on MD2 hardware; this entity is only
     created when walk_state is not None (i.e. the service is present).
-    Pressing starts the test; a separate stop-request is not exposed because
-    Bosch firmware stops the test automatically after the timeout.
+    Pressing starts the test; a separate stop button is also created.
     """
 
     _attr_icon = "mdi:walk"
@@ -210,31 +209,11 @@ class SHCWalkTestButton(SHCEntity, ButtonEntity):
         self._attr_name = "Walk Test"
         self._attr_unique_id = f"{device.root_device_id}_{device.id}_walk_test"
 
-    def press(self) -> None:
+    async def async_press(self) -> None:
         """Send WALK_STATE_START request to the WalkTest service."""
-        if hasattr(self._device, "async_set_walk_state_request"):
-            # Async setter present; call sync equivalent via the service.
-            import asyncio
-            try:
-                loop = asyncio.get_event_loop()
-                loop.run_until_complete(
-                    self._device.async_set_walk_state_request(
-                        WalkTestService.WalkStateRequest.WALK_STATE_START
-                    )
-                )
-            except RuntimeError:
-                # No running loop (unit-test context) — fall back to service setter.
-                svc = getattr(self._device, "_walktest_service", None)
-                if svc is not None:
-                    svc.set_walk_state_request(
-                        WalkTestService.WalkStateRequest.WALK_STATE_START
-                    )
-        else:
-            svc = getattr(self._device, "_walktest_service", None)
-            if svc is not None:
-                svc.set_walk_state_request(
-                    WalkTestService.WalkStateRequest.WALK_STATE_START
-                )
+        await self._device.async_set_walk_state_request(
+            WalkTestService.WalkStateRequest.WALK_STATE_START
+        )
 
 
 class SHCWalkTestStopButton(SHCEntity, ButtonEntity):
@@ -252,26 +231,8 @@ class SHCWalkTestStopButton(SHCEntity, ButtonEntity):
         self._attr_name = "Walk Test Stop"
         self._attr_unique_id = f"{device.root_device_id}_{device.id}_walk_test_stop"
 
-    def press(self) -> None:
-        """Send STOP request to the WalkTest service."""
-        import asyncio
-        if hasattr(self._device, "async_set_walk_state_request"):
-            try:
-                loop = asyncio.get_event_loop()
-                loop.run_until_complete(
-                    self._device.async_set_walk_state_request(
-                        WalkTestService.WalkStateRequest.STOP
-                    )
-                )
-            except RuntimeError:
-                svc = getattr(self._device, "_walktest_service", None)
-                if svc is not None:
-                    svc.set_walk_state_request(
-                        WalkTestService.WalkStateRequest.STOP
-                    )
-        else:
-            svc = getattr(self._device, "_walktest_service", None)
-            if svc is not None:
-                svc.set_walk_state_request(
-                    WalkTestService.WalkStateRequest.STOP
-                )
+    async def async_press(self) -> None:
+        """Send WALK_STATE_STOP request to the WalkTest service."""
+        await self._device.async_set_walk_state_request(
+            WalkTestService.WalkStateRequest.WALK_STATE_STOP
+        )

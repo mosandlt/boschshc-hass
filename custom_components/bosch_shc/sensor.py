@@ -824,7 +824,7 @@ class WalkStateSensor(SHCEntity, SensorEntity):
     """
 
     _attr_device_class = SensorDeviceClass.ENUM
-    _attr_options = ["WALK_TEST_STARTED", "STOPPED", "UNKNOWN"]
+    _attr_options = ["WALK_TEST_STARTED", "WALK_TEST_STOPPED", "UNKNOWN"]
 
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the walk-state sensor."""

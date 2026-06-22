@@ -13,6 +13,7 @@ from boschshcpy.services_impl import (
     DisplayedTemperatureConfiguration,
     PirSensorConfigurationService,
     PowerSwitchConfigurationService,
+    SmartSensitivityControlService,
     SmokeSensitivityService,
     SwitchConfiguration,
     TerminalConfiguration,
@@ -125,6 +126,13 @@ _OUTPUT_MODE_OPTIONS = [
     SwitchConfiguration.OutputMode.DETACHED_SHORT_PRESS.name,
     SwitchConfiguration.OutputMode.DETACHED_LONG_PRESS.name,
     SwitchConfiguration.OutputMode.UNSUPPORTED.name,
+]
+
+# SmartSensitivity manual level: HIGH / MIDDLE / LOW (exclude UNKNOWN).
+_SMART_SENSITIVITY_OPTIONS = [
+    SmartSensitivityControlService.MotionSensitivity.HIGH.name,
+    SmartSensitivityControlService.MotionSensitivity.MIDDLE.name,
+    SmartSensitivityControlService.MotionSensitivity.LOW.name,
 ]
 
 
@@ -275,6 +283,26 @@ async def async_setup_entry(
                     entry_id=config_entry.entry_id,
                 )
             )
+
+    # SmartSensitivityControl manual level selects (Motion Detector II).
+    # Two entities: one for SECURITY context, one for COMFORT context.
+    for device in getattr(session.device_helper, "motion_detectors2", []):
+        if device_excluded(device, config_entry.options):
+            continue
+        if not hasattr(device, "get_smart_sensitivity"):
+            continue
+        entities.append(
+            SmartSensitivitySecurityLevelSelect(
+                device=device,
+                entry_id=config_entry.entry_id,
+            )
+        )
+        entities.append(
+            SmartSensitivityComfortLevelSelect(
+                device=device,
+                entry_id=config_entry.entry_id,
+            )
+        )
 
     if entities:
         async_add_entities(entities)
@@ -780,3 +808,82 @@ class OutputModeSelect(SHCEntity, SelectEntity):
 
     def _set_output_mode(self, value: SwitchConfiguration.OutputMode) -> None:
         self._device.output_mode = value
+
+
+class SmartSensitivitySecurityLevelSelect(SHCEntity, SelectEntity):
+    """Select entity for SmartSensitivityControl manual level — SECURITY context.
+
+    The MD2 SmartSensitivityControl service stores a per-context manualLevel
+    as a MotionSensitivity enum (HIGH/MIDDLE/LOW).  Only created when
+    get_smart_sensitivity is available on the device.
+    """
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_options = _SMART_SENSITIVITY_OPTIONS
+
+    def __init__(self, device: SHCDevice, entry_id: str) -> None:
+        """Initialize the security sensitivity level select."""
+        super().__init__(device, entry_id)
+        self._attr_name = "Security Sensitivity Level"
+        self._attr_unique_id = (
+            f"{device.root_device_id}_{device.id}_smart_sensitivity_security"
+        )
+
+    @property
+    def current_option(self) -> str | None:
+        """Return the current manual level for the SECURITY context."""
+        ctx = SmartSensitivityControlService.SmartSensitivityContext.SECURITY
+        sensitivity = self._device.get_smart_sensitivity(ctx)
+        if sensitivity is None:
+            return None
+        level = sensitivity.get("manualLevel")
+        if level is None:
+            return None
+        # level may be an enum or a string
+        name = level.name if hasattr(level, "name") else str(level)
+        if name not in self._attr_options:
+            return None
+        return name
+
+    async def async_select_option(self, option: str) -> None:
+        """Set the manual level for the SECURITY context."""
+        ctx = SmartSensitivityControlService.SmartSensitivityContext.SECURITY
+        level = SmartSensitivityControlService.MotionSensitivity[option]
+        await self._device.async_set_smart_sensitivity_manual_level(ctx, level)
+
+
+class SmartSensitivityComfortLevelSelect(SHCEntity, SelectEntity):
+    """Select entity for SmartSensitivityControl manual level — COMFORT context."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_options = _SMART_SENSITIVITY_OPTIONS
+
+    def __init__(self, device: SHCDevice, entry_id: str) -> None:
+        """Initialize the comfort sensitivity level select."""
+        super().__init__(device, entry_id)
+        self._attr_name = "Comfort Sensitivity Level"
+        self._attr_unique_id = (
+            f"{device.root_device_id}_{device.id}_smart_sensitivity_comfort"
+        )
+
+    @property
+    def current_option(self) -> str | None:
+        """Return the current manual level for the COMFORT context."""
+        ctx = SmartSensitivityControlService.SmartSensitivityContext.COMFORT
+        sensitivity = self._device.get_smart_sensitivity(ctx)
+        if sensitivity is None:
+            return None
+        level = sensitivity.get("manualLevel")
+        if level is None:
+            return None
+        # level may be an enum or a string
+        name = level.name if hasattr(level, "name") else str(level)
+        if name not in self._attr_options:
+            return None
+        return name
+
+    async def async_select_option(self, option: str) -> None:
+        """Set the manual level for the COMFORT context."""
+        ctx = SmartSensitivityControlService.SmartSensitivityContext.COMFORT
+        level = SmartSensitivityControlService.MotionSensitivity[option]
+        await self._device.async_set_smart_sensitivity_manual_level(ctx, level)

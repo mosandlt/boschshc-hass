@@ -136,26 +136,6 @@ async def async_setup_entry(
                 )
             )
 
-    # SmartSensitivityControl manual level numbers (Motion Detector II).
-    # Two entities: one for SECURITY context, one for COMFORT context.
-    for device in getattr(session.device_helper, "motion_detectors2", []):
-        if device_excluded(device, config_entry.options):
-            continue
-        if not hasattr(device, "get_smart_sensitivity"):
-            continue
-        entities.append(
-            SmartSensitivitySecurityLevelNumber(
-                device=device,
-                entry_id=config_entry.entry_id,
-            )
-        )
-        entities.append(
-            SmartSensitivityComfortLevelNumber(
-                device=device,
-                entry_id=config_entry.entry_id,
-            )
-        )
-
     if entities:
         async_add_entities(entities)
 
@@ -567,80 +547,3 @@ class DisplayOnTimeNumber(SHCEntity, NumberEntity):
     def set_native_value(self, value: float) -> None:
         """Set the display on-time."""
         self._device.display_on_time = value
-
-
-class SmartSensitivitySecurityLevelNumber(SHCEntity, NumberEntity):
-    """Number entity for SmartSensitivityControl manual level — SECURITY context.
-
-    The MD2 SmartSensitivityControl service stores a per-context manualLevel
-    integer.  Only created when get_smart_sensitivity is available on the device
-    (i.e. the SmartSensitivityControl service is present).
-    """
-
-    _attr_entity_category = EntityCategory.CONFIG
-    _attr_native_min_value = 0.0
-    _attr_native_max_value = 10.0
-    _attr_native_step = 1.0
-    _attr_mode = NumberMode.SLIDER
-
-    def __init__(self, device: SHCDevice, entry_id: str) -> None:
-        """Initialize the security sensitivity level number."""
-        super().__init__(device, entry_id)
-        self._attr_name = "Security Sensitivity Level"
-        self._attr_unique_id = (
-            f"{device.root_device_id}_{device.id}_smart_sensitivity_security"
-        )
-
-    @property
-    def native_value(self) -> float | None:
-        """Return the current manual level for the SECURITY context."""
-        from boschshcpy.services_impl import SmartSensitivityControlService
-        ctx = SmartSensitivityControlService.SmartSensitivityContext.SECURITY
-        sensitivity = self._device.get_smart_sensitivity(ctx)
-        if sensitivity is None:
-            return None
-        return float(sensitivity.get("manualLevel", 0))
-
-    def set_native_value(self, value: float) -> None:
-        """Set the manual level for the SECURITY context."""
-        from boschshcpy.services_impl import SmartSensitivityControlService
-        ctx = SmartSensitivityControlService.SmartSensitivityContext.SECURITY
-        svc = getattr(self._device, "_smart_sensitivity_control_service", None)
-        if svc is not None:
-            svc.set_manual_level(ctx, int(value))
-
-
-class SmartSensitivityComfortLevelNumber(SHCEntity, NumberEntity):
-    """Number entity for SmartSensitivityControl manual level — COMFORT context."""
-
-    _attr_entity_category = EntityCategory.CONFIG
-    _attr_native_min_value = 0.0
-    _attr_native_max_value = 10.0
-    _attr_native_step = 1.0
-    _attr_mode = NumberMode.SLIDER
-
-    def __init__(self, device: SHCDevice, entry_id: str) -> None:
-        """Initialize the comfort sensitivity level number."""
-        super().__init__(device, entry_id)
-        self._attr_name = "Comfort Sensitivity Level"
-        self._attr_unique_id = (
-            f"{device.root_device_id}_{device.id}_smart_sensitivity_comfort"
-        )
-
-    @property
-    def native_value(self) -> float | None:
-        """Return the current manual level for the COMFORT context."""
-        from boschshcpy.services_impl import SmartSensitivityControlService
-        ctx = SmartSensitivityControlService.SmartSensitivityContext.COMFORT
-        sensitivity = self._device.get_smart_sensitivity(ctx)
-        if sensitivity is None:
-            return None
-        return float(sensitivity.get("manualLevel", 0))
-
-    def set_native_value(self, value: float) -> None:
-        """Set the manual level for the COMFORT context."""
-        from boschshcpy.services_impl import SmartSensitivityControlService
-        ctx = SmartSensitivityControlService.SmartSensitivityContext.COMFORT
-        svc = getattr(self._device, "_smart_sensitivity_control_service", None)
-        if svc is not None:
-            svc.set_manual_level(ctx, int(value))
