@@ -293,6 +293,14 @@ async def async_setup_entry(
                 entry_id=config_entry.entry_id,
             )
         )
+        # WalkTest state sensor: only created when WalkTest service is present.
+        if hasattr(sensor, "walk_state") and sensor.walk_state is not None:
+            entities.append(
+                WalkStateSensor(
+                    device=sensor,
+                    entry_id=config_entry.entry_id,
+                )
+            )
         if diagnostic_enabled:
             await async_migrate_to_new_unique_id(
                 hass,
@@ -805,3 +813,34 @@ class TwinguardDescriptionSensor(SHCEntity, SensorEntity):
     def native_value(self):
         """Return the air quality description string."""
         return self._device.description
+
+
+class WalkStateSensor(SHCEntity, SensorEntity):
+    """Sensor for the Motion Detector II walk-test state.
+
+    Reports the current WalkTest walkState enum name (WALK_TEST_STARTED /
+    STOPPED / UNKNOWN).  The WalkTest service is optional on MD2 hardware;
+    this sensor is only created when walk_state is not None.
+    """
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = ["WALK_TEST_STARTED", "STOPPED", "UNKNOWN"]
+
+    def __init__(self, device: SHCDevice, entry_id: str) -> None:
+        """Initialize the walk-state sensor."""
+        super().__init__(device, entry_id)
+        self._attr_name = "Walk Test State"
+        self._attr_unique_id = (
+            f"{device.root_device_id}_{device.id}_walk_state"
+        )
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the current walk state as its enum name."""
+        try:
+            val = self._device.walk_state
+            if val is None:
+                return None
+            return val.name
+        except (AttributeError, ValueError):
+            return None
