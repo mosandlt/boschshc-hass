@@ -136,6 +136,20 @@
     }
   },
   "entity": {
+    "climate": {
+      "room_climate_control": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "auto": "Automatic",
+              "manual": "Manual",
+              "boost": "Boost",
+              "eco": "Eco"
+            }
+          }
+        }
+      }
+    },
     "button": {
       "smoke_test": { "name": "Smoke Test" },
       "walk_test": { "name": "Walk Test" },

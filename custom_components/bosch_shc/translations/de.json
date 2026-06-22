@@ -135,6 +135,20 @@
     }
   },
   "entity": {
+    "climate": {
+      "room_climate_control": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "auto": "Automatisch",
+              "manual": "Manuell",
+              "boost": "Aufheizen",
+              "eco": "Eco"
+            }
+          }
+        }
+      }
+    },
     "button": {
       "smoke_test": { "name": "Rauchmelder-Test" },
       "walk_test": { "name": "Begehungstest starten" },
