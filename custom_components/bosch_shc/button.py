@@ -142,7 +142,7 @@ class SHCSmokeTestButton(SHCEntity, ButtonEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the smoke-test button."""
         super().__init__(device, entry_id)
-        self._attr_name = "Smoke Test"
+        self._attr_translation_key = "smoke_test"
         self._attr_unique_id = f"{device.root_device_id}_{device.id}_smoke_test"
 
     def press(self) -> None:
@@ -206,7 +206,7 @@ class SHCWalkTestButton(SHCEntity, ButtonEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the walk-test start button."""
         super().__init__(device, entry_id)
-        self._attr_name = "Walk Test"
+        self._attr_translation_key = "walk_test"
         self._attr_unique_id = f"{device.root_device_id}_{device.id}_walk_test"
 
     async def async_press(self) -> None:
@@ -228,7 +228,7 @@ class SHCWalkTestStopButton(SHCEntity, ButtonEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the walk-test stop button."""
         super().__init__(device, entry_id)
-        self._attr_name = "Walk Test Stop"
+        self._attr_translation_key = "walk_test_stop"
         self._attr_unique_id = f"{device.root_device_id}_{device.id}_walk_test_stop"
 
     async def async_press(self) -> None:

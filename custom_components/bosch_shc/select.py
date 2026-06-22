@@ -317,7 +317,7 @@ class MotionSensitivitySelect(SHCEntity, SelectEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the motion sensitivity select entity."""
         super().__init__(device, entry_id)
-        self._attr_name = "Motion Sensitivity"
+        self._attr_translation_key = "motion_sensitivity"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_motion_sensitivity"
         )
@@ -355,7 +355,7 @@ class VibrationSensitivitySelect(SHCEntity, SelectEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the vibration sensitivity select entity."""
         super().__init__(device, entry_id)
-        self._attr_name = "Vibration Sensitivity"
+        self._attr_translation_key = "vibration_sensitivity"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_vibration_sensitivity"
         )
@@ -393,7 +393,7 @@ class StateAfterPowerOutageSelect(SHCEntity, SelectEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the state-after-power-outage select."""
         super().__init__(device, entry_id)
-        self._attr_name = "State After Power Outage"
+        self._attr_translation_key = "state_after_power_outage"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_state_after_power_outage"
         )
@@ -437,7 +437,7 @@ class SmokeSensitivitySelect(SHCEntity, SelectEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the smoke sensitivity select."""
         super().__init__(device, entry_id)
-        self._attr_name = "Smoke Sensitivity"
+        self._attr_translation_key = "smoke_sensitivity"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_smoke_sensitivity"
         )
@@ -481,7 +481,7 @@ class DisplayDirectionSelect(SHCEntity, SelectEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the display direction select."""
         super().__init__(device, entry_id)
-        self._attr_name = "Display Direction"
+        self._attr_translation_key = "display_direction"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_display_direction"
         )
@@ -523,7 +523,7 @@ class DisplayedTemperatureSelect(SHCEntity, SelectEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the displayed-temperature select."""
         super().__init__(device, entry_id)
-        self._attr_name = "Displayed Temperature"
+        self._attr_translation_key = "displayed_temperature"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_displayed_temperature"
         )
@@ -567,7 +567,7 @@ class TerminalTypeSelect(SHCEntity, SelectEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the terminal type select."""
         super().__init__(device, entry_id)
-        self._attr_name = "Terminal Type"
+        self._attr_translation_key = "terminal_type"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_terminal_type"
         )
@@ -609,7 +609,7 @@ class ValveTypeSelect(SHCEntity, SelectEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the valve type select."""
         super().__init__(device, entry_id)
-        self._attr_name = "Valve Type"
+        self._attr_translation_key = "valve_type"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_valve_type"
         )
@@ -651,7 +651,7 @@ class HeaterTypeSelect(SHCEntity, SelectEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the heater type select."""
         super().__init__(device, entry_id)
-        self._attr_name = "Heater Type"
+        self._attr_translation_key = "heater_type"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_heater_type"
         )
@@ -693,7 +693,7 @@ class SwitchTypeSelect(SHCEntity, SelectEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the switch type select."""
         super().__init__(device, entry_id)
-        self._attr_name = "Switch Type"
+        self._attr_translation_key = "switch_type"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_switch_type"
         )
@@ -735,7 +735,7 @@ class ActuatorTypeSelect(SHCEntity, SelectEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the actuator type select."""
         super().__init__(device, entry_id)
-        self._attr_name = "Actuator Type"
+        self._attr_translation_key = "actuator_type"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_actuator_type"
         )
@@ -777,7 +777,7 @@ class OutputModeSelect(SHCEntity, SelectEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the output mode select."""
         super().__init__(device, entry_id)
-        self._attr_name = "Output Mode"
+        self._attr_translation_key = "output_mode"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_output_mode"
         )
@@ -824,7 +824,7 @@ class SmartSensitivitySecurityLevelSelect(SHCEntity, SelectEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the security sensitivity level select."""
         super().__init__(device, entry_id)
-        self._attr_name = "Security Sensitivity Level"
+        self._attr_translation_key = "smart_sensitivity_security"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_smart_sensitivity_security"
         )
@@ -861,7 +861,7 @@ class SmartSensitivityComfortLevelSelect(SHCEntity, SelectEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the comfort sensitivity level select."""
         super().__init__(device, entry_id)
-        self._attr_name = "Comfort Sensitivity Level"
+        self._attr_translation_key = "smart_sensitivity_comfort"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_smart_sensitivity_comfort"
         )

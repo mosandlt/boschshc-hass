@@ -577,9 +577,9 @@ class TestBatteryLevelSensorCreation:
                 ).async_setup_entry(hass, entry, lambda e: added.extend(e))
             )
 
-        entity_names = [getattr(e, "_attr_name", None) for e in added]
-        assert "Battery Level" in entity_names, (
-            f"BatteryLevelSensor not created. Got: {entity_names}"
+        entity_keys = [getattr(e, "_attr_translation_key", None) for e in added]
+        assert "battery_level" in entity_keys, (
+            f"BatteryLevelSensor not created. Got: {entity_keys}"
         )
 
     def test_battery_level_sensor_unique_id(self):
@@ -598,5 +598,5 @@ class TestBatteryLevelSensorCreation:
         # Call __init__ directly
         BatteryLevelSensor.__init__(sensor, device=device, entry_id="eid1")
 
-        assert sensor._attr_name == "Battery Level"
+        assert sensor._attr_translation_key == "battery_level"
         assert sensor._attr_unique_id == "root-456_dev-123_battery_level"

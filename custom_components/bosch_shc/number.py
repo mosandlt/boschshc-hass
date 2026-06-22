@@ -207,7 +207,7 @@ class ImpulseLengthNumber(SHCEntity, NumberEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the impulse length number."""
         super().__init__(device, entry_id)
-        self._attr_name = "Impulse Length"
+        self._attr_translation_key = "impulse_length"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_impulse_length"
         )
@@ -320,7 +320,7 @@ class PowerThresholdNumber(SHCEntity, NumberEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the power threshold number."""
         super().__init__(device, entry_id)
-        self._attr_name = "Energy Saving Power Threshold"
+        self._attr_translation_key = "energy_saving_power_threshold"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_power_threshold"
         )
@@ -355,7 +355,7 @@ class EnterDurationNumber(SHCEntity, NumberEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the enter duration number."""
         super().__init__(device, entry_id)
-        self._attr_name = "Energy Saving Enter Duration"
+        self._attr_translation_key = "energy_saving_enter_duration"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_enter_duration_seconds"
         )
@@ -389,7 +389,7 @@ class LedBrightnessNumber(SHCEntity, NumberEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the LED brightness number."""
         super().__init__(device, entry_id)
-        self._attr_name = "LED Brightness"
+        self._attr_translation_key = "led_brightness"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_led_brightness"
         )
@@ -443,7 +443,7 @@ class DisplayBrightnessNumber(SHCEntity, NumberEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the display brightness number."""
         super().__init__(device, entry_id)
-        self._attr_name = "Display Brightness"
+        self._attr_translation_key = "display_brightness"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_display_brightness"
         )
@@ -501,7 +501,7 @@ class DisplayOnTimeNumber(SHCEntity, NumberEntity):
     def __init__(self, device: SHCDevice, entry_id: str) -> None:
         """Initialize the display on-time number."""
         super().__init__(device, entry_id)
-        self._attr_name = "Display On Time"
+        self._attr_translation_key = "display_on_time"
         self._attr_unique_id = (
             f"{device.root_device_id}_{device.id}_display_on_time"
         )

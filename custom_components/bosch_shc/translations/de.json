@@ -134,6 +134,150 @@
       }
     }
   },
+  "entity": {
+    "button": {
+      "smoke_test": { "name": "Rauchmelder-Test" },
+      "walk_test": { "name": "Begehungstest starten" },
+      "walk_test_stop": { "name": "Begehungstest stoppen" }
+    },
+    "number": {
+      "impulse_length": { "name": "Impulsdauer" },
+      "energy_saving_power_threshold": { "name": "Energiesparmodus Leistungsschwelle" },
+      "energy_saving_enter_duration": { "name": "Energiesparmodus Einschaltdauer" },
+      "led_brightness": { "name": "LED-Helligkeit" },
+      "display_brightness": { "name": "Display-Helligkeit" },
+      "display_on_time": { "name": "Display-Einschaltdauer" }
+    },
+    "select": {
+      "motion_sensitivity": {
+        "name": "Bewegungsempfindlichkeit",
+        "state": {
+          "HIGH": "Hoch",
+          "MIDDLE": "Mittel",
+          "LOW": "Niedrig"
+        }
+      },
+      "vibration_sensitivity": {
+        "name": "Vibrationsempfindlichkeit",
+        "state": {
+          "VERY_HIGH": "Sehr hoch",
+          "HIGH": "Hoch",
+          "MEDIUM": "Mittel",
+          "LOW": "Niedrig",
+          "VERY_LOW": "Sehr niedrig"
+        }
+      },
+      "state_after_power_outage": {
+        "name": "Zustand nach Stromausfall",
+        "state": {
+          "OFF": "Aus",
+          "ON": "Ein",
+          "LAST_STATE": "Letzter Zustand"
+        }
+      },
+      "smoke_sensitivity": {
+        "name": "Rauchempfindlichkeit",
+        "state": {
+          "HIGH": "Hoch",
+          "MIDDLE": "Mittel",
+          "LOW": "Niedrig"
+        }
+      },
+      "display_direction": {
+        "name": "Anzeigeausrichtung",
+        "state": {
+          "NORMAL": "Normal",
+          "REVERSED": "Gedreht"
+        }
+      },
+      "displayed_temperature": {
+        "name": "Angezeigte Temperatur",
+        "state": {
+          "SETPOINT": "Sollwert",
+          "MEASURED": "Gemessen"
+        }
+      },
+      "terminal_type": {
+        "name": "Anschlusstyp",
+        "state": {
+          "NOT_CONNECTED": "Nicht angeschlossen",
+          "FLOOR_SENSOR_CONNECTED": "Bodensensor angeschlossen",
+          "FLOOR_SENSOR_USED_FOR_REGULATION": "Bodensensor zur Regelung",
+          "FLOOR_SENSOR_DISPLAYED": "Bodensensor Anzeige",
+          "FLOOR_SENSOR_DISPLAYED_AND_USED_FOR_REGULATION": "Bodensensor Anzeige und Regelung",
+          "VOLT_FREE_SENSOR_CONNECTED": "Potentialfreier Sensor angeschlossen",
+          "VOLT_FREE_SENSOR_CONNECTED_AND_USED_FOR_OPERATION": "Potentialfreier Sensor für Betrieb",
+          "OUTDOOR_SENSOR_CONNECTED": "Außensensor angeschlossen"
+        }
+      },
+      "valve_type": {
+        "name": "Ventiltyp",
+        "state": {
+          "NORMALLY_CLOSE": "Normalerweise geschlossen",
+          "NORMALLY_OPEN": "Normalerweise offen"
+        }
+      },
+      "heater_type": {
+        "name": "Heizungstyp",
+        "state": {
+          "FLOOR_HEATING": "Fußbodenheizung",
+          "FLOOR_HEATING_LOW_ENERGY": "Fußbodenheizung (Niedrigenergie)",
+          "RADIATOR": "Heizkörper",
+          "CONVECTOR_PASSIVE": "Konvektor (passiv)",
+          "CONVECTOR_ACTIVE": "Konvektor (aktiv)"
+        }
+      },
+      "switch_type": {
+        "name": "Schaltertyp",
+        "state": {
+          "NONE": "Kein",
+          "PUSHBUTTON": "Taster",
+          "SWITCH": "Schalter",
+          "NO_SWITCH": "Kein Schalter"
+        }
+      },
+      "actuator_type": {
+        "name": "Aktor-Typ",
+        "state": {
+          "NORMALLY_CLOSED": "Normalerweise geschlossen",
+          "NORMALLY_OPEN": "Normalerweise offen",
+          "UNSUPPORTED": "Nicht unterstützt"
+        }
+      },
+      "output_mode": {
+        "name": "Ausgabemodus",
+        "state": {
+          "ATTACHED": "Gekoppelt",
+          "DETACHED": "Entkoppelt",
+          "DETACHED_SHORT_PRESS": "Entkoppelt (Kurzdruck)",
+          "DETACHED_LONG_PRESS": "Entkoppelt (Langdruck)",
+          "UNSUPPORTED": "Nicht unterstützt"
+        }
+      },
+      "smart_sensitivity_security": {
+        "name": "Sicherheits-Empfindlichkeitsstufe",
+        "state": {
+          "HIGH": "Hoch",
+          "MIDDLE": "Mittel",
+          "LOW": "Niedrig"
+        }
+      },
+      "smart_sensitivity_comfort": {
+        "name": "Komfort-Empfindlichkeitsstufe",
+        "state": {
+          "HIGH": "Hoch",
+          "MIDDLE": "Mittel",
+          "LOW": "Niedrig"
+        }
+      }
+    },
+    "sensor": {
+      "walk_test_state": { "name": "Begehungstest-Status" },
+      "battery_level": { "name": "Akkustand" },
+      "combined_rating": { "name": "Gesamtbewertung" },
+      "air_quality_description": { "name": "Luftqualitätsbeschreibung" }
+    }
+  },
   "device_automation": {
     "trigger_subtype": {
       "LOWER_BUTTON": "Untere Taste",
