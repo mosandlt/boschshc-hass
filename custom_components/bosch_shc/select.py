@@ -201,9 +201,7 @@ async def async_setup_entry(
             continue
         if not getattr(device, "supports_smoke_sensitivity", False):
             continue
-        try:
-            _ = device.smoke_sensitivity
-        except AttributeError:
+        if getattr(device, "smoke_sensitivity", None) is None:
             continue
         entities.append(
             SmokeSensitivitySelect(

@@ -251,6 +251,14 @@ class TestSmokeSensitivitySelect:
         types = [type(e).__name__ for e in entities]
         assert "SmokeSensitivitySelect" not in types
 
+    def test_skipped_when_service_present_but_field_absent(self):
+        """Service registered but state dict has no smokeSensitivity key → None → skip."""
+        sd = _fake_device(supports_smoke_sensitivity=True, smoke_sensitivity=None)
+        session = _make_session(smoke_detectors=[sd])
+        entities = _setup(session)
+        types = [type(e).__name__ for e in entities]
+        assert "SmokeSensitivitySelect" not in types
+
     def test_created_for_twinguard(self):
         tg = _fake_device(smoke_sensitivity=True, supports_smoke_sensitivity=True)
         session = _make_session(twinguards=[tg])
