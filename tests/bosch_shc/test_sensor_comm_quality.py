@@ -48,9 +48,10 @@ class _NoneQuality:
 
 
 class TestCommunicationQualitySensor:
-    def test_valid_quality_returns_name(self):
+    def test_valid_quality_returns_slug(self):
+        # #339: native_value is now a lowercase slug (translated for display).
         sensor = _make_sensor(_GoodQuality())
-        assert sensor.native_value == "GOOD"
+        assert sensor.native_value == "good"
 
     def test_value_error_returns_none_and_logs(self):
         sensor = _make_sensor(_BadQuality())
